@@ -1,11 +1,13 @@
-# api documentation for  [grunt (v1.0.1)](http://gruntjs.com/)  [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-grunt.svg)](https://travis-ci.org/npmdoc/node-npmdoc-grunt)
+# api documentation for  [grunt (v1.0.1)](http://gruntjs.com/)  [![npm package](https://img.shields.io/npm/v/npmdoc-grunt.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-grunt) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-grunt.svg)](https://travis-ci.org/npmdoc/node-npmdoc-grunt)
 #### The JavaScript Task Runner
 
 [![NPM](https://nodei.co/npm/grunt.png?downloads=true)](https://www.npmjs.com/package/grunt)
 
-[![apidoc](https://npmdoc.github.io/node-npmdoc-grunt/build/screen-capture.buildNpmdoc.browser._2Fhome_2Ftravis_2Fbuild_2Fnpmdoc_2Fnode-npmdoc-grunt_2Ftmp_2Fbuild_2Fapidoc.html.png)](https://npmdoc.github.io/node-npmdoc-grunt/build..beta..travis-ci.org/apidoc.html)
+[![apidoc](https://npmdoc.github.io/node-npmdoc-grunt/build/screenCapture.buildNpmdoc.browser._2Fhome_2Ftravis_2Fbuild_2Fnpmdoc_2Fnode-npmdoc-grunt_2Ftmp_2Fbuild_2Fapidoc.html.png)](https://npmdoc.github.io/node-npmdoc-grunt/build..beta..travis-ci.org/apidoc.html)
 
-![package-listing](https://npmdoc.github.io/node-npmdoc-grunt/build/screen-capture.npmPackageListing.svg)
+![npmPackageListing](https://npmdoc.github.io/node-npmdoc-grunt/build/screenCapture.npmPackageListing.svg)
+
+![npmPackageDependencyTree](https://npmdoc.github.io/node-npmdoc-grunt/build/screenCapture.npmPackageDependencyTree.svg)
 
 
 
