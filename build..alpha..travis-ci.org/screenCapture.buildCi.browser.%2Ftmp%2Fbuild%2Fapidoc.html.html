@@ -9638,7 +9638,7 @@
 
             <a class="apidocElementLiA" href="#apidoc.element.grunt.util.async.nextTick">
             function <span class="apidocSignatureSpan">grunt.util.async.</span>nextTick
-            <span class="apidocSignatureSpan">(callback)</span>
+            <span class="apidocSignatureSpan">()</span>
             </a>
 
         </li>
@@ -10465,7 +10465,23 @@
     return config.get(prop);
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+this.requires = task.requires.bind(task);
+// Expose config.requires on `this`.
+this.requiresConfig = grunt.config.requires;
+// Return an options object with the specified defaults overwritten by task-
+// specific overrides, via the "options" property.
+this.options = function() {
+  var args = [{}].concat(grunt.util.toArray(arguments)).concat([
+    grunt.<span class="apidocCodeKeywordSpan">config</span>([name, 'options'])
+  ]);
+  var options = grunt.util._.extend.apply(null, args);
+  grunt.verbose.writeflags(options, 'Options');
+  return options;
+};
+// If this task was an alias or a multi task called without a target,
+// only log if in verbose mode.
+...</pre></li>
     </ul>
 
 
@@ -10478,7 +10494,23 @@
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">fatal = function () { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+if (!tasksSpecified) {
+  verbose.writeln('No tasks specified, running default tasks.');
+}
+verbose.writeflags(tasks, 'Running tasks');
+
+// Handle otherwise unhandleable (probably asynchronous) exceptions.
+var uncaughtHandler = function(e) {
+  fail.<span class="apidocCodeKeywordSpan">fatal</span>(e, fail.code.TASK_FAILURE);
+};
+process.on('uncaughtException', uncaughtHandler);
+
+// Report, etc when all tasks have completed.
+task.options({
+  error: function(e) {
+    fail.warn(e, fail.code.TASK_FAILURE);
+...</pre></li>
     </ul>
 
 
@@ -10557,7 +10589,23 @@
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">loadNpmTasks = function () { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    // upwards if not found locally.
+    var filepath = grunt.file.findup('node_modules/' + depName, {
+      cwd: path.resolve('node_modules', name),
+      nocase: true
+    });
+    if (filepath) {
+      // Load this task plugin recursively.
+      task.<span class="apidocCodeKeywordSpan">loadNpmTasks</span>(path.relative(root, filepath));
+    }
+  });
+  loadTaskDepth--;
+  return;
+}
+
+// Process task plugins.
+...</pre></li>
     </ul>
 
 
@@ -10592,7 +10640,24 @@
     return data[key];
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+WARNING: 6,
+};
+
+// DRY it up!
+function writeln(e, mode) {
+grunt.log.muted = false;
+var msg = String(e.message || e);
+if (!grunt.<span class="apidocCodeKeywordSpan">option</span>('no-color')) { msg += '\x07'; } // Beep!
+if (mode === 'warn') {
+  msg = 'Warning: ' + msg + ' ';
+  msg += (grunt.option('force') ? 'Used --force, continuing.'.underline : 'Use --force to continue.'
+;);
+  msg = msg.yellow;
+} else {
+  msg = ('Fatal error: ' + msg).red;
+}
+...</pre></li>
     </ul>
 
 
@@ -10631,7 +10696,23 @@
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">registerTask = function () { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// If optional "info" string is omitted, shuffle arguments a bit.
+if (fn == null) {
+  fn = info;
+  info = 'Custom multi task.';
+}
+// Store a reference to the task object, in case the task gets renamed.
+var thisTask;
+task.<span class="apidocCodeKeywordSpan">registerTask</span>(name, info, function(target) {
+  // Guaranteed to always be the actual task name.
+  var name = thisTask.name;
+  // Arguments (sans target) as an array.
+  this.args = grunt.util.toArray(arguments).slice(1);
+  // If a target wasn't specified, run this task once for each target.
+  if (!target || target === '*') {
+    return task.runAllTargets(name, this.args);
+...</pre></li>
     </ul>
 
 
@@ -10757,7 +10838,23 @@
   // https://github.com/gruntjs/grunt/pull/1026
   task.start({asyncDone: true});
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+        // (or create a new array).
+        [].push.apply(cli.options[key], options[key]);
+      }
+    });
+  }
+
+  // Run tasks.
+  grunt.<span class="apidocCodeKeywordSpan">tasks</span>(cli.tasks, cli.options, done);
+};
+
+// Default options.
+var optlist = cli.optlist = gruntOptions;
+
+// Parse `optlist` into a form that nopt can handle.
+var aliases = {};
+...</pre></li>
     </ul>
 
 
@@ -10770,7 +10867,23 @@
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">n/a</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// If no src/dest or files were specified, return an empty files array.
+if (files.length === 0) {
+  grunt.verbose.writeln('File: ' + '[no files]'.yellow);
+  return [];
+}
+
+// Process all normalized file objects.
+files = grunt.<span class="apidocCodeKeywordSpan">util._</span>(files).chain().forEach(function(obj) {
+  if (!('src' in obj) || !obj.src) { return; }
+  // Normalize .src properties to flattened array.
+  if (Array.isArray(obj.src)) {
+    obj.src = grunt.util._.flatten(obj.src);
+  } else {
+    obj.src = [obj.src];
+  }
+...</pre></li>
     </ul>
 
 
@@ -10783,7 +10896,23 @@
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">warn = function () { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  fail.fatal(e, fail.code.TASK_FAILURE);
+};
+process.on('uncaughtException', uncaughtHandler);
+
+// Report, etc when all tasks have completed.
+task.options({
+  error: function(e) {
+    fail.<span class="apidocCodeKeywordSpan">warn</span>(e, fail.code.TASK_FAILURE);
+  },
+  done: function() {
+    // Stop handling uncaught exceptions so that we don't leave any
+    // unwanted process-level side effects behind. There is no need to do
+    // this in the error callback, because fail.warn() will either kill
+    // the process, or with --force keep on going all the way here.
+    process.removeListener('uncaughtException', uncaughtHandler);
+...</pre></li>
     </ul>
 
 
@@ -10853,7 +10982,23 @@
     return config.get(prop);
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+this.requires = task.requires.bind(task);
+// Expose config.requires on `this`.
+this.requiresConfig = grunt.config.requires;
+// Return an options object with the specified defaults overwritten by task-
+// specific overrides, via the "options" property.
+this.options = function() {
+  var args = [{}].concat(grunt.util.toArray(arguments)).concat([
+    grunt.<span class="apidocCodeKeywordSpan">config</span>([name, 'options'])
+  ]);
+  var options = grunt.util._.extend.apply(null, args);
+  grunt.verbose.writeflags(options, 'Options');
+  return options;
+};
+// If this task was an alias or a multi task called without a target,
+// only log if in verbose mode.
+...</pre></li>
     </ul>
 
 
@@ -10883,7 +11028,23 @@
     <li>description and source-code<pre class="apidocCodePre">get = function (prop) {
   return config.process(config.getRaw(prop));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Get/set config data. If value was passed, set. Otherwise, get.
+var config = module.exports = function(prop, value) {
+  if (arguments.length === 2) {
+    // Two arguments were passed, set the property's value.
+    return config.set(prop, value);
+  } else {
+    // Get the property's value (or the entire data object).
+    return config.<span class="apidocCodeKeywordSpan">get</span>(prop);
+  }
+};
+
+// The actual config data.
+config.data = {};
+
+// Escape any . in name with \. so dot-based namespacing works properly.
+...</pre></li>
     </ul>
 
 
@@ -10898,7 +11059,23 @@
     <li>description and source-code<pre class="apidocCodePre">getPropString = function (prop) {
   return Array.isArray(prop) ? prop.map(config.escape).join('.') : prop;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  return Array.isArray(prop) ? prop.map(config.escape).join('.') : prop;
+};
+
+// Get raw, unprocessed config data.
+config.getRaw = function(prop) {
+  if (prop) {
+    // Prop was passed, get that specific property's value.
+    return grunt.util.namespace.get(config.data, config.<span class="apidocCodeKeywordSpan">getPropString</span>(prop));
+  } else {
+    // No prop was passed, return the entire config.data object.
+    return config.data;
+  }
+};
+
+// Match '&lt;%= FOO %&gt;' where FOO is a propString, eg. foo or foo.bar but not
+...</pre></li>
     </ul>
 
 
@@ -10919,7 +11096,23 @@
     return config.data;
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Match '&lt;%= FOO %&gt;' where FOO is a propString, eg. foo or foo.bar but not
+// a method call like foo() or foo.bar().
+var propStringTmplRe = /^&lt;%=\s*([a-z0-9_$]+(?:\.[a-z0-9_$]+)*)\s*%&gt;$/i;
+
+// Get config data, recursively processing templates.
+config.get = function(prop) {
+return config.process(config.<span class="apidocCodeKeywordSpan">getRaw</span>(prop));
+};
+
+// Expand a config value recursively. Used for post-processing raw values
+// already retrieved from the config.
+config.process = function(raw) {
+return grunt.util.recurse(raw, function(value) {
+  // If the value is not a string, return it.
+...</pre></li>
     </ul>
 
 
@@ -10936,7 +11129,22 @@
   // Initialize and return data.
   return (config.data = obj || {});
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+gExpose(fail, 'warn');
+gExpose(fail, 'fatal');
+
+// Expose the task interface. I've never called this manually, and have no idea
+// how it will work. But it might.
+grunt.tasks = function(tasks, options, done) {
+// Update options with passed-in options.
+option.<span class="apidocCodeKeywordSpan">init</span>(options);
+
+// Display the grunt version and quit if the user did --version.
+var _tasks, _options;
+if (option('version')) {
+  // Not --verbose.
+  log.writeln('grunt v' + grunt.version);
+...</pre></li>
     </ul>
 
 
@@ -10952,7 +11160,23 @@
   grunt.util._.merge(config.data, obj);
   return config.data;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Set config data.
+config.set = function(prop, value) {
+return grunt.util.namespace.set(config.data, config.getPropString(prop), value);
+};
+
+// Deep merge config data.
+config.merge = function(obj) {
+grunt.util._.<span class="apidocCodeKeywordSpan">merge</span>(config.data, obj);
+return config.data;
+};
+
+// Initialize config data.
+config.init = function(obj) {
+grunt.verbose.write('Initializing config...').ok();
+// Initialize and return data.
+...</pre></li>
     </ul>
 
 
@@ -10982,7 +11206,23 @@
     return grunt.template.process(value, {data: config.data});
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Match '&lt;%= FOO %&gt;' where FOO is a propString, eg. foo or foo.bar but not
+// a method call like foo() or foo.bar().
+var propStringTmplRe = /^&lt;%=\s*([a-z0-9_$]+(?:\.[a-z0-9_$]+)*)\s*%&gt;$/i;
+
+// Get config data, recursively processing templates.
+config.get = function(prop) {
+return config.<span class="apidocCodeKeywordSpan">process</span>(config.getRaw(prop));
+};
+
+// Expand a config value recursively. Used for post-processing raw values
+// already retrieved from the config.
+config.process = function(raw) {
+return grunt.util.recurse(raw, function(value) {
+  // If the value is not a string, return it.
+...</pre></li>
     </ul>
 
 
@@ -11035,7 +11275,23 @@
     <li>description and source-code<pre class="apidocCodePre">set = function (prop, value) {
   return grunt.util.namespace.set(config.data, config.getPropString(prop), value);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+var grunt = require('../grunt');
+
+// Get/set config data. If value was passed, set. Otherwise, get.
+var config = module.exports = function(prop, value) {
+  if (arguments.length === 2) {
+    // Two arguments were passed, set the property's value.
+    return config.<span class="apidocCodeKeywordSpan">set</span>(prop, value);
+  } else {
+    // Get the property's value (or the entire data object).
+    return config.get(prop);
+  }
+};
+
+// The actual config data.
+...</pre></li>
     </ul>
 
 
@@ -11059,7 +11315,23 @@
   dumpStack(e);
   grunt.util.exit(typeof errcode === 'number' ? errcode : fail.code.FATAL_ERROR);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+if (!tasksSpecified) {
+  verbose.writeln('No tasks specified, running default tasks.');
+}
+verbose.writeflags(tasks, 'Running tasks');
+
+// Handle otherwise unhandleable (probably asynchronous) exceptions.
+var uncaughtHandler = function(e) {
+  fail.<span class="apidocCodeKeywordSpan">fatal</span>(e, fail.code.TASK_FAILURE);
+};
+process.on('uncaughtException', uncaughtHandler);
+
+// Report, etc when all tasks have completed.
+task.options({
+  error: function(e) {
+    fail.warn(e, fail.code.TASK_FAILURE);
+...</pre></li>
     </ul>
 
 
@@ -11078,7 +11350,23 @@
     grunt.log.writeln().success('Done.');
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Stop handling uncaught exceptions so that we don't leave any
+// unwanted process-level side effects behind. There is no need to do
+// this in the error callback, because fail.warn() will either kill
+// the process, or with --force keep on going all the way here.
+process.removeListener('uncaughtException', uncaughtHandler);
+
+// Output a final fail / success report.
+fail.<span class="apidocCodeKeywordSpan">report</span>();
+
+if (done) {
+  // Execute "done" function when done (only if passed, of course).
+  done();
+} else {
+  // Otherwise, explicitly exit.
+  util.exit(0);
+...</pre></li>
     </ul>
 
 
@@ -11101,7 +11389,23 @@
     grunt.util.exit(typeof errcode === 'number' ? errcode : fail.code.WARNING);
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  fail.fatal(e, fail.code.TASK_FAILURE);
+};
+process.on('uncaughtException', uncaughtHandler);
+
+// Report, etc when all tasks have completed.
+task.options({
+  error: function(e) {
+    fail.<span class="apidocCodeKeywordSpan">warn</span>(e, fail.code.TASK_FAILURE);
+  },
+  done: function() {
+    // Stop handling uncaught exceptions so that we don't leave any
+    // unwanted process-level side effects behind. There is no need to do
+    // this in the error callback, because fail.warn() will either kill
+    // the process, or with --force keep on going all the way here.
+    process.removeListener('uncaughtException', uncaughtHandler);
+...</pre></li>
     </ul>
 
 
@@ -11154,7 +11458,23 @@
     file.write(destpath, contents, readWriteOptions);
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  file.mkdir(destpath);
+  // Iterate over all sub-files/dirs, recursing.
+  fs.readdirSync(srcpath).forEach(function(filepath) {
+    copy(path.join(srcpath, filepath), path.join(destpath, filepath), options);
+  });
+} else {
+  // Copy a single file.
+  file.<span class="apidocCodeKeywordSpan">_copy</span>(srcpath, destpath, options);
+}
+};
+
+// Read a file, optionally processing its content, then write the output.
+file._copy = function(srcpath, destpath, options) {
+if (!options) { options = {}; }
+// If a process function was specified, and noProcess isn't true or doesn't
+...</pre></li>
     </ul>
 
 
@@ -11173,7 +11493,24 @@
   }
   return true;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  return true;
+};
+
+// Test to see if a filepath is the CWD.
+file.isPathCwd = function() {
+  var filepath = path.join.apply(path, arguments);
+  try {
+    return file.<span class="apidocCodeKeywordSpan">arePathsEquivalent</span>(fs.realpathSync(process.cwd()), fs.realpathSync(filepath
+));
+  } catch (e) {
+    return false;
+  }
+};
+
+// Test to see if a filepath is contained within the CWD.
+file.isPathInCwd = function() {
+...</pre></li>
     </ul>
 
 
@@ -11273,7 +11610,21 @@
   }
   return true;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  }
+};
+
+// Test to see if a filepath is contained within the CWD.
+file.isPathInCwd = function() {
+  var filepath = path.join.apply(path, arguments);
+  try {
+    return file.<span class="apidocCodeKeywordSpan">doesPathContain</span>(fs.realpathSync(process.cwd()), fs.realpathSync(filepath
+));
+  } catch (e) {
+    return false;
+  }
+};
+...</pre></li>
     </ul>
 
 
@@ -11289,7 +11640,24 @@
   var filepath = path.join.apply(path, arguments);
   return fs.existsSync(filepath);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Set directory mode in a strict-mode-friendly way.
+if (mode == null) {
+  mode = parseInt('0777', 8) &amp; (~process.umask());
+}
+dirpath.split(pathSeparatorRe).reduce(function(parts, part) {
+  parts += part + '/';
+  var subpath = path.resolve(parts);
+  if (!file.<span class="apidocCodeKeywordSpan">exists</span>(subpath)) {
+    try {
+      fs.mkdirSync(subpath, mode);
+    } catch (e) {
+      throw grunt.util.error('Unable to create directory "' + subpath + '" (Error code: ' + e.code
+ + ').', e);
+    }
+  }
+  return parts;
+...</pre></li>
     </ul>
 
 
@@ -11335,7 +11703,23 @@
   }
   return matches;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  rename: function(destBase, destPath) {
+    return path.join(destBase || '', destPath);
+  }
+});
+var files = [];
+var fileByDest = {};
+// Find all files matching pattern, using passed-in options.
+file.<span class="apidocCodeKeywordSpan">expand</span>(options, patterns).forEach(function(src) {
+  var destPath = src;
+  // Flatten?
+  if (options.flatten) {
+    destPath = path.basename(destPath);
+  }
+  // Change the extension?
+  if ('ext' in options) {
+...</pre></li>
     </ul>
 
 
@@ -11390,7 +11774,23 @@
   });
   return files;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+- `coffee-script` is upgraded to `~1.10.0` which could incur breaking changes
+  when using the language with plugins and Gruntfiles.
+- `nopt` is upgraded to `~3.0.6` which has fixed many issues, including passing
+  multiple arguments and dealing with numbers as options. Be aware previously
+  `--foo bar` used to pass the value `'bar'` to the option `foo`. It will now
+  set the option `foo` to `true` and run the task `bar`.
+-`glob` is upgraded to `~6.0.4` and `minimatch` is upgraded to `~3.0.0`. Results
+  are now sorted by default with `grunt.file.<span class="apidocCodeKeywordSpan">expandMapping</span>()`. Pass the
+  `nosort: true` option if you don't want the results to be sorted.
+- `lodash` was upgraded to `~4.3.0`. Many changes have occurred. Some of which
+  that directly effect Grunt are `grunt.util._.template()` returns a compile
+  function and `grunt.util._.flatten` no longer flattens deeply.
+  `grunt.util._` is deprecated and we highly encourage you to
+  `npm install lodash` and `var _ = require('lodash')` to use `lodash`.
+  Please see the lodash changelog for a full list of changes: https://github.com/lodash/lodash/wiki/Changelog
+...</pre></li>
     </ul>
 
 
@@ -11434,7 +11834,23 @@
   // No files were found!
   return null;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Process collection plugins.
+if (pkg.keywords &amp;&amp; pkg.keywords.indexOf('gruntcollection') !== -1) {
+  loadTaskDepth++;
+  Object.keys(pkg.dependencies).forEach(function(depName) {
+    // Npm sometimes pulls dependencies out if they're shared, so find
+    // upwards if not found locally.
+    var filepath = grunt.file.<span class="apidocCodeKeywordSpan">findup</span>('node_modules/' + depName, {
+      cwd: path.resolve('node_modules', name),
+      nocase: true
+    });
+    if (filepath) {
+      // Load this task plugin recursively.
+      task.loadNpmTasks(path.relative(root, filepath));
+    }
+...</pre></li>
     </ul>
 
 
@@ -11474,7 +11890,23 @@
   var filepath = path.join.apply(path, arguments);
   return file.exists(filepath) &amp;&amp; fs.statSync(filepath).isDirectory();
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+}
+};
+
+// Read a file, optionally processing its content, then write the output.
+// Or read a directory, recursively creating directories, reading files,
+// processing content, writing output.
+file.copy = function copy(srcpath, destpath, options) {
+if (file.<span class="apidocCodeKeywordSpan">isDir</span>(srcpath)) {
+  // Copy a directory, recursively.
+  // Explicitly create new dest directory.
+  file.mkdir(destpath);
+  // Iterate over all sub-files/dirs, recursing.
+  fs.readdirSync(srcpath).forEach(function(filepath) {
+    copy(path.join(srcpath, filepath), path.join(destpath, filepath), options);
+  });
+...</pre></li>
     </ul>
 
 
@@ -11490,7 +11922,23 @@
   var filepath = path.join.apply(path, arguments);
   return file.exists(filepath) &amp;&amp; fs.statSync(filepath).isFile();
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  var filepath = path.join.apply(path, arguments);
+  return file.exists(filepath) &amp;&amp; fs.statSync(filepath).isDirectory();
+};
+
+// True if the path is a file.
+file.isFile = function() {
+  var filepath = path.join.apply(path, arguments);
+  return file.exists(filepath) &amp;&amp; fs.statSync(filepath).<span class="apidocCodeKeywordSpan">isFile</span>();
+};
+
+// Is a given file path absolute?
+file.isPathAbsolute = function() {
+  var filepath = path.join.apply(path, arguments);
+  return pathIsAbsolute(filepath);
+};
+...</pre></li>
     </ul>
 
 
@@ -11521,7 +11969,23 @@
     <li>description and source-code<pre class="apidocCodePre">isMatch = function () {
   return file.match.apply(file, arguments).length &gt; 0;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Read a file, optionally processing its content, then write the output.
+file._copy = function(srcpath, destpath, options) {
+if (!options) { options = {}; }
+// If a process function was specified, and noProcess isn't true or doesn't
+// match the srcpath, process the file's source.
+var process = options.process &amp;&amp; options.noProcess !== true &amp;&amp;
+  !(options.noProcess &amp;&amp; file.<span class="apidocCodeKeywordSpan">isMatch</span>(options.noProcess, srcpath));
+// If the file will be processed, use the encoding as-specified. Otherwise,
+// use an encoding of null to force the file to be read/written as a Buffer.
+var readWriteOptions = process ? options : {encoding: null};
+// Actually read the file.
+var contents = file.read(srcpath, readWriteOptions);
+if (process) {
+  grunt.verbose.write('Processing source...');
+...</pre></li>
     </ul>
 
 
@@ -11557,7 +12021,23 @@
     return false;
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  grunt.verbose.error();
+  grunt.log.warn('Cannot delete nonexistent file.');
+  return false;
+}
+
+// Only delete cwd or outside cwd if --force enabled. Be careful, people!
+if (!options.force) {
+  if (file.<span class="apidocCodeKeywordSpan">isPathCwd</span>(filepath)) {
+    grunt.verbose.error();
+    grunt.fail.warn('Cannot delete the current working directory.');
+    return false;
+  } else if (!file.isPathInCwd(filepath)) {
+    grunt.verbose.error();
+    grunt.fail.warn('Cannot delete files outside the current working directory.');
+    return false;
+...</pre></li>
     </ul>
 
 
@@ -11577,7 +12057,23 @@
     return false;
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Only delete cwd or outside cwd if --force enabled. Be careful, people!
+if (!options.force) {
+  if (file.isPathCwd(filepath)) {
+    grunt.verbose.error();
+    grunt.fail.warn('Cannot delete the current working directory.');
+    return false;
+  } else if (!file.<span class="apidocCodeKeywordSpan">isPathInCwd</span>(filepath)) {
+    grunt.verbose.error();
+    grunt.fail.warn('Cannot delete files outside the current working directory.');
+    return false;
+  }
+}
+
+try {
+...</pre></li>
     </ul>
 
 
@@ -11607,7 +12103,23 @@
     return file.minimatch.match(filepaths, pattern, options);
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// already retrieved from the config.
+config.process = function(raw) {
+return grunt.util.recurse(raw, function(value) {
+  // If the value is not a string, return it.
+  if (typeof value !== 'string') { return value; }
+  // If possible, access the specified property via config.get, in case it
+  // doesn't refer to a string, but instead refers to an object or array.
+  var matches = value.<span class="apidocCodeKeywordSpan">match</span>(propStringTmplRe);
+  var result;
+  if (matches) {
+    result = config.get(matches[1]);
+    // If the result retrieved from the config data wasn't null or undefined,
+    // return it.
+    if (result != null) { return result; }
+  }
+...</pre></li>
     </ul>
 
 
@@ -11667,7 +12179,23 @@
     return parts;
   }, '');
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Write a file.
+file.write = function(filepath, contents, options) {
+if (!options) { options = {}; }
+var nowrite = grunt.option('no-write');
+grunt.verbose.write((nowrite ? 'Not actually writing ' : 'Writing ') + filepath + '...');
+// Create path, if necessary.
+file.<span class="apidocCodeKeywordSpan">mkdir</span>(path.dirname(filepath));
+try {
+  // If contents is already a Buffer, don't try to encode it. If no encoding
+  // was specified, use the default.
+  if (!Buffer.isBuffer(contents)) {
+    contents = iconv.encode(contents, options.encoding || file.defaultEncoding);
+  }
+  // Actually write file.
+...</pre></li>
     </ul>
 
 
@@ -11697,7 +12225,24 @@
     throw grunt.util.error('Unable to read "' + filepath + '" file (Error code: ' + e.code + ').', e);
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  grunt.verbose.error();
+  throw grunt.util.error('Unable to read "' + filepath + '" file (Error code: ' + e.code + ').&amp;#
+x27;, e);
+}
+};
+
+// Read a file, parse its contents, return an object.
+file.readJSON = function(filepath, options) {
+var src = file.<span class="apidocCodeKeywordSpan">read</span>(filepath, options);
+var result;
+grunt.verbose.write('Parsing ' + filepath + '...');
+try {
+  result = JSON.parse(src);
+  grunt.verbose.ok();
+  return result;
+} catch (e) {
+...</pre></li>
     </ul>
 
 
@@ -11722,7 +12267,23 @@
     throw grunt.util.error('Unable to parse "' + filepath + '" file (' + e.message + ').', e);
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Load tasks and handlers from a given locally-installed Npm module (installed
+// relative to the base dir).
+task.loadNpmTasks = function(name) {
+loadTasksMessage('"' + name + '" local Npm module');
+var root = path.resolve('node_modules');
+var pkgfile = path.join(root, name, 'package.json');
+var pkg = grunt.file.exists(pkgfile) ? grunt.file.<span class="apidocCodeKeywordSpan">readJSON</span>(pkgfile) : {keywords: []};
+
+// Process collection plugins.
+if (pkg.keywords &amp;&amp; pkg.keywords.indexOf('gruntcollection') !== -1) {
+  loadTaskDepth++;
+  Object.keys(pkg.dependencies).forEach(function(depName) {
+    // Npm sometimes pulls dependencies out if they're shared, so find
+    // upwards if not found locally.
+...</pre></li>
     </ul>
 
 
@@ -11770,7 +12331,23 @@
     }
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+config.get = function(prop) {
+return config.process(config.getRaw(prop));
+};
+
+// Expand a config value recursively. Used for post-processing raw values
+// already retrieved from the config.
+config.process = function(raw) {
+return grunt.util.<span class="apidocCodeKeywordSpan">recurse</span>(raw, function(value) {
+  // If the value is not a string, return it.
+  if (typeof value !== 'string') { return value; }
+  // If possible, access the specified property via config.get, in case it
+  // doesn't refer to a string, but instead refers to an object or array.
+  var matches = value.match(propStringTmplRe);
+  var result;
+  if (matches) {
+...</pre></li>
     </ul>
 
 
@@ -11821,7 +12398,23 @@
     throw grunt.util.error('Unable to write "' + filepath + '" file (Error code: ' + e.code + ').', e);
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    `npm install lodash` and `var _ = require('lodash')` to use `lodash`.
+    Please see the lodash changelog for a full list of changes: https://github.com/lodash/lodash/wiki/Changelog
+  - `iconv-lite` is upgraded to `~0.4.13` and strips the BOM by default.
+  - `js-yaml` is upgraded to `~3.5.2` and may affect `grunt.file.readYAML`.
+    We encourage you to please `npm install js-yaml` and use
+    `var YAML = require('js-yaml')` directly in case of future deprecations.
+  - A file `mode` option can be passed into
+    [grunt.file.<span class="apidocCodeKeywordSpan">write</span>()](http://gruntjs.com/api/grunt.file#grunt.file.write).
+  - `Done, without errors.` was changed to `Done.` to avoid failing by mistake
+    on the word `errors`.
+v0.4.5:
+date: 2014-05-12
+changes:
+  - Updated rimraf to 2.2.8. Closes gh-1134.
+  - Moved grunt.log into separate grunt-legacy-log module.
+...</pre></li>
     </ul>
 
 
@@ -12019,7 +12612,23 @@
 
   return new GlobSync(pattern, options).found
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// object to an array and use that.
+var patterns = Array.isArray(args[0]) ? args[0] : args;
+// Return empty set if there are no patterns or filepaths.
+if (patterns.length === 0) { return []; }
+// Return all matching filepaths.
+var matches = processPatterns(patterns, function(pattern) {
+  // Find all matching files for this pattern.
+  return file.glob.<span class="apidocCodeKeywordSpan">sync</span>(pattern, options);
+});
+// Filter result set?
+if (options.filter) {
+  matches = matches.filter(function(filepath) {
+    filepath = path.join(options.cwd || '', filepath);
+    try {
+      if (typeof options.filter === 'function') {
+...</pre></li>
     </ul>
 
 
@@ -13532,7 +14141,23 @@
 
   return m
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+var extDotRe = {
+first: /(\.[^\/]*)?$/,
+last: /(\.[^\/\.]*)?$/,
+};
+
+// Build a multi task "files" object dynamically.
+file.expandMapping = function(patterns, destBase, options) {
+options = grunt.util._.<span class="apidocCodeKeywordSpan">defaults</span>({}, options, {
+  extDot: 'first',
+  rename: function(destBase, destPath) {
+    return path.join(destBase || '', destPath);
+  }
+});
+var files = [];
+var fileByDest = {};
+...</pre></li>
     </ul>
 
 
@@ -13550,7 +14175,23 @@
     return minimatch(p, pattern, options)
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+config.requires = function() {
+var p = grunt.util.pluralize;
+var props = grunt.util.toArray(arguments).map(config.getPropString);
+var msg = 'Verifying propert' + p(props.length, 'y/ies') +
+  ' ' + grunt.log.wordlist(props) + ' exist' + p(props.length, 's') +
+  ' in config...';
+grunt.verbose.write(msg);
+var failProps = config.data &amp;&amp; props.<span class="apidocCodeKeywordSpan">filter</span>(function(prop) {
+  return config.get(prop) == null;
+}).map(function(prop) {
+  return '"' + prop + '"';
+});
+if (config.data &amp;&amp; failProps.length === 0) {
+  grunt.verbose.ok();
+  return true;
+...</pre></li>
     </ul>
 
 
@@ -13588,7 +14229,23 @@
   }
   return list
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// already retrieved from the config.
+config.process = function(raw) {
+return grunt.util.recurse(raw, function(value) {
+  // If the value is not a string, return it.
+  if (typeof value !== 'string') { return value; }
+  // If possible, access the specified property via config.get, in case it
+  // doesn't refer to a string, but instead refers to an object or array.
+  var matches = value.<span class="apidocCodeKeywordSpan">match</span>(propStringTmplRe);
+  var result;
+  if (matches) {
+    result = config.get(matches[1]);
+    // If the result retrieved from the config data wasn't null or undefined,
+    // return it.
+    if (result != null) { return result; }
+  }
+...</pre></li>
     </ul>
 
 
@@ -13644,7 +14301,24 @@
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">debug = function () {}</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    // If this task was an alias or a multi task called without a target,
+    // only log if in verbose mode.
+    var logger = _fn.alias || (thisTask.multi &amp;&amp; (!arg || arg === '*')) ? 'verbose' : 'log'
+;;
+    // Actually log.
+    grunt[logger].header('Running "' + this.nameArgs + '"' +
+      (this.name !== this.nameArgs ? ' (' + this.name + ')' : '') + ' task');
+    // If --debug was specified, log the path to this task's source file.
+    grunt[logger].<span class="apidocCodeKeywordSpan">debug</span>('Task source: ' + thisTask.meta.filepath);
+    // Actually run the task.
+    return _fn.apply(this, arguments);
+  };
+  return task;
+};
+
+// Multi task targets can't start with _ or be a reserved property (options).
+...</pre></li>
     </ul>
 
 
@@ -13832,7 +14506,23 @@
   if (options.flipNegate) return false
   return this.negate
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// already retrieved from the config.
+config.process = function(raw) {
+return grunt.util.recurse(raw, function(value) {
+  // If the value is not a string, return it.
+  if (typeof value !== 'string') { return value; }
+  // If possible, access the specified property via config.get, in case it
+  // doesn't refer to a string, but instead refers to an object or array.
+  var matches = value.<span class="apidocCodeKeywordSpan">match</span>(propStringTmplRe);
+  var result;
+  if (matches) {
+    result = config.get(matches[1]);
+    // If the result retrieved from the config data wasn't null or undefined,
+    // return it.
+    if (result != null) { return result; }
+  }
+...</pre></li>
     </ul>
 
 
@@ -14144,7 +14834,24 @@
       continue
 
       // these are mostly the same in regexp and ...</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Read a file, parse its contents, return an object.
+file.readJSON = function(filepath, options) {
+  var src = file.read(filepath, options);
+  var result;
+  grunt.verbose.write('Parsing ' + filepath + '...');
+  try {
+    result = JSON.<span class="apidocCodeKeywordSpan">parse</span>(src);
+    grunt.verbose.ok();
+    return result;
+  } catch (e) {
+    grunt.verbose.error();
+    throw grunt.util.error('Unable to parse "' + filepath + '" file (' + e.message + ').'
+;, e);
+  }
+};
+...</pre></li>
     </ul>
 
 
@@ -14194,7 +14901,23 @@
     <li>description and source-code<pre class="apidocCodePre">display = function () {
   exports.queue.forEach(function(name) { exports[name](); });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+}
+
+// Init colors.
+log.initColors();
+
+// Display help and quit if the user did --help.
+if (option('help')) {
+  help.<span class="apidocCodeKeywordSpan">display</span>();
+  return;
+}
+
+// A little header stuff.
+verbose.header('Initializing').writeflags(option.flags(), 'Command-line options');
+
+// Determine and output which tasks will be run.
+...</pre></li>
     </ul>
 
 
@@ -14224,7 +14947,24 @@
     <li>description and source-code<pre class="apidocCodePre">header = function () {
   grunt.log.writeln('Grunt: The JavaScript Task Runner (v' + grunt.version + ')');
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Display help and quit if the user did --help.
+if (option('help')) {
+  help.display();
+  return;
+}
+
+// A little header stuff.
+verbose.<span class="apidocCodeKeywordSpan">header</span>('Initializing').writeflags(option.flags(), 'Command-line
+ options');
+
+// Determine and output which tasks will be run.
+var tasksSpecified = tasks &amp;&amp; tasks.length &gt; 0;
+tasks = task.parseArgs([tasksSpecified ? tasks : 'default']);
+
+// Initialize tasks.
+task.init(tasks, options);
+...</pre></li>
     </ul>
 
 
@@ -14239,7 +14979,24 @@
     <li>description and source-code<pre class="apidocCodePre">initCol1 = function (str) {
   col1len = Math.max(col1len, str.length);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Options.
+exports.initOptions = function() {
+// Build 2-column array for table view.
+exports._options = Object.keys(grunt.cli.optlist).map(function(long) {
+  var o = grunt.cli.optlist[long];
+  var col1 = '--' + (o.negate ? 'no-' : '') + long + (o.short ? ', -' + o.short : '&amp;#
+x27;);
+  exports.<span class="apidocCodeKeywordSpan">initCol1</span>(col1);
+  return [col1, o.info];
+});
+};
+
+exports.options = function() {
+grunt.log.header('Options');
+exports.table(exports._options);
+...</pre></li>
     </ul>
 
 
@@ -14316,7 +15073,24 @@
   grunt.log.header('Options');
   exports.table(exports._options);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+v0.4.2:
+  date: 2013-11-21
+  changes:
+    - Extract internal "namespace" lib to external "getobject" lib.
+    - '"Grunt collections" are now deprecated, use peerDependencies. See "grunt-contrib" 0.8.0 for details
+.'
+    - Fix stdout / stderr issues on Windows. Closes gh-940, gh-921, gh-744, gh-792, gh-644, gh-708.
+    - Fix pipe-redirecting on Windows. Closes gh-510.
+    - Fixed this.<span class="apidocCodeKeywordSpan">options</span>() in renamed basic tasks. Closes gh-855.
+    - Update underscore.string dependency to follow semver. Closes gh-886.
+    - Output task options in verbose mode. Closes gh-749.
+    - Add file.preserveBOM property. Closes gh-806, gh-937.
+    - Test that file methods warn. Closes gh-909.
+    - Fixed a few spelling errors in code comments. Closes gh-849.
+    - Updated watch, jshint and nodeunit deps. Closes gh-914.
+v0.4.1:
+...</pre></li>
     </ul>
 
 
@@ -14351,7 +15125,23 @@
     grunt.log.writetableln(exports.widths, ['', grunt.util._.pad(item[0], col1len), '', item[1]]);
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  exports.initCol1(col1);
+  return [col1, o.info];
+});
+};
+
+exports.options = function() {
+grunt.log.header('Options');
+exports.<span class="apidocCodeKeywordSpan">table</span>(exports._options);
+};
+
+exports.optionsFooter = function() {
+grunt.log.writeln().writelns(
+  'Options marked with * have methods exposed via the grunt API and should ' +
+  'instead be specified inside the Gruntfile wherever possible.'
+);
+...</pre></li>
     </ul>
 
 
@@ -14387,7 +15177,23 @@
     'grunt plugins specified in the Gruntfile or via command-line options.'
   );
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+        // (or create a new array).
+        [].push.apply(cli.options[key], options[key]);
+      }
+    });
+  }
+
+  // Run tasks.
+  grunt.<span class="apidocCodeKeywordSpan">tasks</span>(cli.tasks, cli.options, done);
+};
+
+// Default options.
+var optlist = cli.optlist = gruntOptions;
+
+// Parse `optlist` into a form that nopt can handle.
+var aliases = {};
+...</pre></li>
     </ul>
 
 
@@ -14492,7 +15298,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    // If this task was an alias or a multi task called without a target,
+    // only log if in verbose mode.
+    var logger = _fn.alias || (thisTask.multi &amp;&amp; (!arg || arg === '*')) ? 'verbose' : 'log'
+;;
+    // Actually log.
+    grunt[logger].header('Running "' + this.nameArgs + '"' +
+      (this.name !== this.nameArgs ? ' (' + this.name + ')' : '') + ' task');
+    // If --debug was specified, log the path to this task's source file.
+    grunt[logger].<span class="apidocCodeKeywordSpan">debug</span>('Task source: ' + thisTask.meta.filepath);
+    // Actually run the task.
+    return _fn.apply(this, arguments);
+  };
+  return task;
+};
+
+// Multi task targets can't start with _ or be a reserved property (options).
+...</pre></li>
     </ul>
 
 
@@ -14508,7 +15331,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  return '"' + prop + '"';
+});
+if (config.data &amp;&amp; failProps.length === 0) {
+  grunt.verbose.ok();
+  return true;
+} else {
+  grunt.verbose.or.write(msg);
+  grunt.log.<span class="apidocCodeKeywordSpan">error</span>().error('Unable to process task.');
+  if (!config.data) {
+    throw grunt.util.error('Unable to load config.');
+  } else {
+    throw grunt.util.error('Required config propert' +
+      p(failProps.length, 'y/ies') + ' ' + failProps.join(', ') + ' missing.');
+  }
+}
+...</pre></li>
     </ul>
 
 
@@ -14524,7 +15363,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    last = tmpl;
+  }
+} catch (e) {
+  // In upgrading to Lo-Dash (or Underscore.js 1.3.3), \n and \r in template
+  // tags now causes an exception to be thrown. Warn the user why this is
+  // happening. https://github.com/documentcloud/underscore/issues/553
+  if (String(e) === 'SyntaxError: Unexpected token ILLEGAL' &amp;&amp; /\n|\r/.test(tmpl)) {
+    grunt.log.<span class="apidocCodeKeywordSpan">errorlns</span>('A special character was detected in this template. '
+; +
+      'Inside template tags, the \\n and \\r special characters must be ' +
+      'escaped as \\\\n and \\\\r. (grunt 0.4.0+)');
+  }
+  // Slightly better error message.
+  e.message = 'An error occurred while processing a template (' + e.message + ').';
+  grunt.warn(e, grunt.fail.code.TEMPLATE_ERROR);
+}
+...</pre></li>
     </ul>
 
 
@@ -14540,7 +15396,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+fail.warn = function(e, errcode) {
+var message = typeof e === 'string' ? e : e.message;
+fail.warncount++;
+writeln(message, 'warn');
+// If -f or --force aren't used, stop script processing.
+if (!grunt.option('force')) {
+  dumpStack(e);
+  grunt.log.writeln().<span class="apidocCodeKeywordSpan">fail</span>('Aborted due to warnings.');
+  grunt.util.exit(typeof errcode === 'number' ? errcode : fail.code.WARNING);
+}
+};
+
+// This gets called at the very end.
+fail.report = function() {
+if (fail.warncount &gt; 0) {
+...</pre></li>
     </ul>
 
 
@@ -14556,7 +15428,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Display help and quit if the user did --help.
+if (option('help')) {
+  help.display();
+  return;
+}
+
+// A little header stuff.
+verbose.<span class="apidocCodeKeywordSpan">header</span>('Initializing').writeflags(option.flags(), 'Command-line
+ options');
+
+// Determine and output which tasks will be run.
+var tasksSpecified = tasks &amp;&amp; tasks.length &gt; 0;
+tasks = task.parseArgs([tasksSpecified ? tasks : 'default']);
+
+// Initialize tasks.
+task.init(tasks, options);
+...</pre></li>
     </ul>
 
 
@@ -14572,7 +15461,22 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    verbose.writeln('Available options: ' + _options.join(' '));
+  }
+
+  return;
+}
+
+// Init colors.
+log.<span class="apidocCodeKeywordSpan">initColors</span>();
+
+// Display help and quit if the user did --help.
+if (option('help')) {
+  help.display();
+  return;
+}
+...</pre></li>
     </ul>
 
 
@@ -14588,7 +15492,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+config.merge = function(obj) {
+  grunt.util._.merge(config.data, obj);
+  return config.data;
+};
+
+// Initialize config data.
+config.init = function(obj) {
+  grunt.verbose.write('Initializing config...').<span class="apidocCodeKeywordSpan">ok</span>();
+  // Initialize and return data.
+  return (config.data = obj || {});
+};
+
+// Test to see if required config params have been defined. If not, throw an
+// exception (use this inside of a task).
+config.requires = function() {
+...</pre></li>
     </ul>
 
 
@@ -14620,7 +15540,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+WARNING: 6,
+};
+
+// DRY it up!
+function writeln(e, mode) {
+grunt.log.muted = false;
+var msg = String(e.message || e);
+if (!grunt.<span class="apidocCodeKeywordSpan">option</span>('no-color')) { msg += '\x07'; } // Beep!
+if (mode === 'warn') {
+  msg = 'Warning: ' + msg + ' ';
+  msg += (grunt.option('force') ? 'Used --force, continuing.'.underline : 'Use --force to continue.'
+;);
+  msg = msg.yellow;
+} else {
+  msg = ('Fatal error: ' + msg).red;
+}
+...</pre></li>
     </ul>
 
 
@@ -14636,7 +15573,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+}
+
+// Log a message when loading tasks.
+function loadTasksMessage(info) {
+// Only keep track of names of top-level loaded tasks and collections,
+// not sub-tasks.
+if (loadTaskDepth === 0) { lastInfo = info; }
+grunt.verbose.<span class="apidocCodeKeywordSpan">subhead</span>('Registering ' + info + ' tasks.');
+}
+
+// Load tasks and handlers from a given directory.
+function loadTasks(tasksdir) {
+try {
+  var files = grunt.file.glob.sync('*.{js,coffee}', {cwd: tasksdir, maxDepth: 1});
+  // Load tasks from files.
+...</pre></li>
     </ul>
 
 
@@ -14652,7 +15605,18 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+};
+
+// This gets called at the very end.
+fail.report = function() {
+  if (fail.warncount &gt; 0) {
+    grunt.log.writeln().fail('Done, but with warnings.');
+  } else {
+    grunt.log.writeln().<span class="apidocCodeKeywordSpan">success</span>('Done.');
+  }
+};
+...</pre></li>
     </ul>
 
 
@@ -14668,7 +15632,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  exports.initCol1(col1);
+  return [col1, o.info];
+});
+};
+
+exports.options = function() {
+grunt.log.header('Options');
+exports.<span class="apidocCodeKeywordSpan">table</span>(exports._options);
+};
+
+exports.optionsFooter = function() {
+grunt.log.writeln().writelns(
+  'Options marked with * have methods exposed via the grunt API and should ' +
+  'instead be specified inside the Gruntfile wherever possible.'
+);
+...</pre></li>
     </ul>
 
 
@@ -14700,7 +15680,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  fail.fatal(e, fail.code.TASK_FAILURE);
+};
+process.on('uncaughtException', uncaughtHandler);
+
+// Report, etc when all tasks have completed.
+task.options({
+  error: function(e) {
+    fail.<span class="apidocCodeKeywordSpan">warn</span>(e, fail.code.TASK_FAILURE);
+  },
+  done: function() {
+    // Stop handling uncaught exceptions so that we don't leave any
+    // unwanted process-level side effects behind. There is no need to do
+    // this in the error callback, because fail.warn() will either kill
+    // the process, or with --force keep on going all the way here.
+    process.removeListener('uncaughtException', uncaughtHandler);
+...</pre></li>
     </ul>
 
 
@@ -14716,7 +15712,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Test to see if required config params have been defined. If not, throw an
+// exception (use this inside of a task).
+config.requires = function() {
+var p = grunt.util.pluralize;
+var props = grunt.util.toArray(arguments).map(config.getPropString);
+var msg = 'Verifying propert' + p(props.length, 'y/ies') +
+  ' ' + grunt.log.<span class="apidocCodeKeywordSpan">wordlist</span>(props) + ' exist' + p(props.length, &amp;#
+x27;s') +
+  ' in config...';
+grunt.verbose.write(msg);
+var failProps = config.data &amp;&amp; props.filter(function(prop) {
+  return config.get(prop) == null;
+}).map(function(prop) {
+  return '"' + prop + '"';
+});
+...</pre></li>
     </ul>
 
 
@@ -14748,7 +15761,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    `npm install lodash` and `var _ = require('lodash')` to use `lodash`.
+    Please see the lodash changelog for a full list of changes: https://github.com/lodash/lodash/wiki/Changelog
+  - `iconv-lite` is upgraded to `~0.4.13` and strips the BOM by default.
+  - `js-yaml` is upgraded to `~3.5.2` and may affect `grunt.file.readYAML`.
+    We encourage you to please `npm install js-yaml` and use
+    `var YAML = require('js-yaml')` directly in case of future deprecations.
+  - A file `mode` option can be passed into
+    [grunt.file.<span class="apidocCodeKeywordSpan">write</span>()](http://gruntjs.com/api/grunt.file#grunt.file.write).
+  - `Done, without errors.` was changed to `Done.` to avoid failing by mistake
+    on the word `errors`.
+v0.4.5:
+date: 2014-05-12
+changes:
+  - Updated rimraf to 2.2.8. Closes gh-1134.
+  - Moved grunt.log into separate grunt-legacy-log module.
+...</pre></li>
     </ul>
 
 
@@ -14764,7 +15793,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Display help and quit if the user did --help.
+if (option('help')) {
+  help.display();
+  return;
+}
+
+// A little header stuff.
+verbose.header('Initializing').<span class="apidocCodeKeywordSpan">writeflags</span>(option.flags(), 'Command-line
+ options');
+
+// Determine and output which tasks will be run.
+var tasksSpecified = tasks &amp;&amp; tasks.length &gt; 0;
+tasks = task.parseArgs([tasksSpecified ? tasks : 'default']);
+
+// Initialize tasks.
+task.init(tasks, options);
+...</pre></li>
     </ul>
 
 
@@ -14780,7 +15826,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  // Update options with passed-in options.
+  option.init(options);
+
+  // Display the grunt version and quit if the user did --version.
+  var _tasks, _options;
+  if (option('version')) {
+// Not --verbose.
+log.<span class="apidocCodeKeywordSpan">writeln</span>('grunt v' + grunt.version);
+
+if (option('verbose')) {
+  // --verbose
+  verbose.writeln('Install path: ' + path.resolve(__dirname, '..'));
+  // Yes, this is a total hack, but we don't want to log all that verbose
+  // task initialization stuff here.
+  grunt.log.muted = true;
+...</pre></li>
     </ul>
 
 
@@ -14796,7 +15858,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+exports.options = function() {
+  grunt.log.header('Options');
+  exports.table(exports._options);
+};
+
+exports.optionsFooter = function() {
+  grunt.log.writeln().<span class="apidocCodeKeywordSpan">writelns</span>(
+    'Options marked with * have methods exposed via the grunt API and should ' +
+    'instead be specified inside the Gruntfile wherever possible.'
+  );
+};
+
+// Tasks.
+exports.initTasks = function() {
+...</pre></li>
     </ul>
 
 
@@ -14812,7 +15890,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Widths for options/tasks table output.
+exports.widths = [1, col1len, 2, 76 - col1len];
+};
+
+// Render an array in table form.
+exports.table = function(arr) {
+arr.forEach(function(item) {
+  grunt.log.<span class="apidocCodeKeywordSpan">writetableln</span>(exports.widths, ['', grunt.util._.pad(item[0], col1len
+), '', item[1]]);
+});
+};
+
+// Methods to run, in-order.
+exports.queue = [
+'initOptions',
+'initTasks',
+...</pre></li>
     </ul>
 
 
@@ -14907,7 +16002,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    // If this task was an alias or a multi task called without a target,
+    // only log if in verbose mode.
+    var logger = _fn.alias || (thisTask.multi &amp;&amp; (!arg || arg === '*')) ? 'verbose' : 'log'
+;;
+    // Actually log.
+    grunt[logger].header('Running "' + this.nameArgs + '"' +
+      (this.name !== this.nameArgs ? ' (' + this.name + ')' : '') + ' task');
+    // If --debug was specified, log the path to this task's source file.
+    grunt[logger].<span class="apidocCodeKeywordSpan">debug</span>('Task source: ' + thisTask.meta.filepath);
+    // Actually run the task.
+    return _fn.apply(this, arguments);
+  };
+  return task;
+};
+
+// Multi task targets can't start with _ or be a reserved property (options).
+...</pre></li>
     </ul>
 
 
@@ -14923,7 +16035,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  return '"' + prop + '"';
+});
+if (config.data &amp;&amp; failProps.length === 0) {
+  grunt.verbose.ok();
+  return true;
+} else {
+  grunt.verbose.or.write(msg);
+  grunt.log.<span class="apidocCodeKeywordSpan">error</span>().error('Unable to process task.');
+  if (!config.data) {
+    throw grunt.util.error('Unable to load config.');
+  } else {
+    throw grunt.util.error('Required config propert' +
+      p(failProps.length, 'y/ies') + ' ' + failProps.join(', ') + ' missing.');
+  }
+}
+...</pre></li>
     </ul>
 
 
@@ -14939,7 +16067,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    last = tmpl;
+  }
+} catch (e) {
+  // In upgrading to Lo-Dash (or Underscore.js 1.3.3), \n and \r in template
+  // tags now causes an exception to be thrown. Warn the user why this is
+  // happening. https://github.com/documentcloud/underscore/issues/553
+  if (String(e) === 'SyntaxError: Unexpected token ILLEGAL' &amp;&amp; /\n|\r/.test(tmpl)) {
+    grunt.log.<span class="apidocCodeKeywordSpan">errorlns</span>('A special character was detected in this template. '
+; +
+      'Inside template tags, the \\n and \\r special characters must be ' +
+      'escaped as \\\\n and \\\\r. (grunt 0.4.0+)');
+  }
+  // Slightly better error message.
+  e.message = 'An error occurred while processing a template (' + e.message + ').';
+  grunt.warn(e, grunt.fail.code.TEMPLATE_ERROR);
+}
+...</pre></li>
     </ul>
 
 
@@ -14955,7 +16100,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+fail.warn = function(e, errcode) {
+var message = typeof e === 'string' ? e : e.message;
+fail.warncount++;
+writeln(message, 'warn');
+// If -f or --force aren't used, stop script processing.
+if (!grunt.option('force')) {
+  dumpStack(e);
+  grunt.log.writeln().<span class="apidocCodeKeywordSpan">fail</span>('Aborted due to warnings.');
+  grunt.util.exit(typeof errcode === 'number' ? errcode : fail.code.WARNING);
+}
+};
+
+// This gets called at the very end.
+fail.report = function() {
+if (fail.warncount &gt; 0) {
+...</pre></li>
     </ul>
 
 
@@ -14971,7 +16132,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Display help and quit if the user did --help.
+if (option('help')) {
+  help.display();
+  return;
+}
+
+// A little header stuff.
+verbose.<span class="apidocCodeKeywordSpan">header</span>('Initializing').writeflags(option.flags(), 'Command-line
+ options');
+
+// Determine and output which tasks will be run.
+var tasksSpecified = tasks &amp;&amp; tasks.length &gt; 0;
+tasks = task.parseArgs([tasksSpecified ? tasks : 'default']);
+
+// Initialize tasks.
+task.init(tasks, options);
+...</pre></li>
     </ul>
 
 
@@ -14987,7 +16165,22 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    verbose.writeln('Available options: ' + _options.join(' '));
+  }
+
+  return;
+}
+
+// Init colors.
+log.<span class="apidocCodeKeywordSpan">initColors</span>();
+
+// Display help and quit if the user did --help.
+if (option('help')) {
+  help.display();
+  return;
+}
+...</pre></li>
     </ul>
 
 
@@ -15003,7 +16196,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+config.merge = function(obj) {
+  grunt.util._.merge(config.data, obj);
+  return config.data;
+};
+
+// Initialize config data.
+config.init = function(obj) {
+  grunt.verbose.write('Initializing config...').<span class="apidocCodeKeywordSpan">ok</span>();
+  // Initialize and return data.
+  return (config.data = obj || {});
+};
+
+// Test to see if required config params have been defined. If not, throw an
+// exception (use this inside of a task).
+config.requires = function() {
+...</pre></li>
     </ul>
 
 
@@ -15035,7 +16244,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+WARNING: 6,
+};
+
+// DRY it up!
+function writeln(e, mode) {
+grunt.log.muted = false;
+var msg = String(e.message || e);
+if (!grunt.<span class="apidocCodeKeywordSpan">option</span>('no-color')) { msg += '\x07'; } // Beep!
+if (mode === 'warn') {
+  msg = 'Warning: ' + msg + ' ';
+  msg += (grunt.option('force') ? 'Used --force, continuing.'.underline : 'Use --force to continue.'
+;);
+  msg = msg.yellow;
+} else {
+  msg = ('Fatal error: ' + msg).red;
+}
+...</pre></li>
     </ul>
 
 
@@ -15051,7 +16277,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+}
+
+// Log a message when loading tasks.
+function loadTasksMessage(info) {
+// Only keep track of names of top-level loaded tasks and collections,
+// not sub-tasks.
+if (loadTaskDepth === 0) { lastInfo = info; }
+grunt.verbose.<span class="apidocCodeKeywordSpan">subhead</span>('Registering ' + info + ' tasks.');
+}
+
+// Load tasks and handlers from a given directory.
+function loadTasks(tasksdir) {
+try {
+  var files = grunt.file.glob.sync('*.{js,coffee}', {cwd: tasksdir, maxDepth: 1});
+  // Load tasks from files.
+...</pre></li>
     </ul>
 
 
@@ -15067,7 +16309,18 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+};
+
+// This gets called at the very end.
+fail.report = function() {
+  if (fail.warncount &gt; 0) {
+    grunt.log.writeln().fail('Done, but with warnings.');
+  } else {
+    grunt.log.writeln().<span class="apidocCodeKeywordSpan">success</span>('Done.');
+  }
+};
+...</pre></li>
     </ul>
 
 
@@ -15083,7 +16336,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  exports.initCol1(col1);
+  return [col1, o.info];
+});
+};
+
+exports.options = function() {
+grunt.log.header('Options');
+exports.<span class="apidocCodeKeywordSpan">table</span>(exports._options);
+};
+
+exports.optionsFooter = function() {
+grunt.log.writeln().writelns(
+  'Options marked with * have methods exposed via the grunt API and should ' +
+  'instead be specified inside the Gruntfile wherever possible.'
+);
+...</pre></li>
     </ul>
 
 
@@ -15115,7 +16384,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  fail.fatal(e, fail.code.TASK_FAILURE);
+};
+process.on('uncaughtException', uncaughtHandler);
+
+// Report, etc when all tasks have completed.
+task.options({
+  error: function(e) {
+    fail.<span class="apidocCodeKeywordSpan">warn</span>(e, fail.code.TASK_FAILURE);
+  },
+  done: function() {
+    // Stop handling uncaught exceptions so that we don't leave any
+    // unwanted process-level side effects behind. There is no need to do
+    // this in the error callback, because fail.warn() will either kill
+    // the process, or with --force keep on going all the way here.
+    process.removeListener('uncaughtException', uncaughtHandler);
+...</pre></li>
     </ul>
 
 
@@ -15131,7 +16416,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Test to see if required config params have been defined. If not, throw an
+// exception (use this inside of a task).
+config.requires = function() {
+var p = grunt.util.pluralize;
+var props = grunt.util.toArray(arguments).map(config.getPropString);
+var msg = 'Verifying propert' + p(props.length, 'y/ies') +
+  ' ' + grunt.log.<span class="apidocCodeKeywordSpan">wordlist</span>(props) + ' exist' + p(props.length, &amp;#
+x27;s') +
+  ' in config...';
+grunt.verbose.write(msg);
+var failProps = config.data &amp;&amp; props.filter(function(prop) {
+  return config.get(prop) == null;
+}).map(function(prop) {
+  return '"' + prop + '"';
+});
+...</pre></li>
     </ul>
 
 
@@ -15163,7 +16465,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    `npm install lodash` and `var _ = require('lodash')` to use `lodash`.
+    Please see the lodash changelog for a full list of changes: https://github.com/lodash/lodash/wiki/Changelog
+  - `iconv-lite` is upgraded to `~0.4.13` and strips the BOM by default.
+  - `js-yaml` is upgraded to `~3.5.2` and may affect `grunt.file.readYAML`.
+    We encourage you to please `npm install js-yaml` and use
+    `var YAML = require('js-yaml')` directly in case of future deprecations.
+  - A file `mode` option can be passed into
+    [grunt.file.<span class="apidocCodeKeywordSpan">write</span>()](http://gruntjs.com/api/grunt.file#grunt.file.write).
+  - `Done, without errors.` was changed to `Done.` to avoid failing by mistake
+    on the word `errors`.
+v0.4.5:
+date: 2014-05-12
+changes:
+  - Updated rimraf to 2.2.8. Closes gh-1134.
+  - Moved grunt.log into separate grunt-legacy-log module.
+...</pre></li>
     </ul>
 
 
@@ -15179,7 +16497,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Display help and quit if the user did --help.
+if (option('help')) {
+  help.display();
+  return;
+}
+
+// A little header stuff.
+verbose.header('Initializing').<span class="apidocCodeKeywordSpan">writeflags</span>(option.flags(), 'Command-line
+ options');
+
+// Determine and output which tasks will be run.
+var tasksSpecified = tasks &amp;&amp; tasks.length &gt; 0;
+tasks = task.parseArgs([tasksSpecified ? tasks : 'default']);
+
+// Initialize tasks.
+task.init(tasks, options);
+...</pre></li>
     </ul>
 
 
@@ -15195,7 +16530,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  // Update options with passed-in options.
+  option.init(options);
+
+  // Display the grunt version and quit if the user did --version.
+  var _tasks, _options;
+  if (option('version')) {
+// Not --verbose.
+log.<span class="apidocCodeKeywordSpan">writeln</span>('grunt v' + grunt.version);
+
+if (option('verbose')) {
+  // --verbose
+  verbose.writeln('Install path: ' + path.resolve(__dirname, '..'));
+  // Yes, this is a total hack, but we don't want to log all that verbose
+  // task initialization stuff here.
+  grunt.log.muted = true;
+...</pre></li>
     </ul>
 
 
@@ -15211,7 +16562,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+exports.options = function() {
+  grunt.log.header('Options');
+  exports.table(exports._options);
+};
+
+exports.optionsFooter = function() {
+  grunt.log.writeln().<span class="apidocCodeKeywordSpan">writelns</span>(
+    'Options marked with * have methods exposed via the grunt API and should ' +
+    'instead be specified inside the Gruntfile wherever possible.'
+  );
+};
+
+// Tasks.
+exports.initTasks = function() {
+...</pre></li>
     </ul>
 
 
@@ -15227,7 +16594,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Widths for options/tasks table output.
+exports.widths = [1, col1len, 2, 76 - col1len];
+};
+
+// Render an array in table form.
+exports.table = function(arr) {
+arr.forEach(function(item) {
+  grunt.log.<span class="apidocCodeKeywordSpan">writetableln</span>(exports.widths, ['', grunt.util._.pad(item[0], col1len
+), '', item[1]]);
+});
+};
+
+// Methods to run, in-order.
+exports.queue = [
+'initOptions',
+'initTasks',
+...</pre></li>
     </ul>
 
 
@@ -15258,7 +16642,24 @@
     return data[key];
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+WARNING: 6,
+};
+
+// DRY it up!
+function writeln(e, mode) {
+grunt.log.muted = false;
+var msg = String(e.message || e);
+if (!grunt.<span class="apidocCodeKeywordSpan">option</span>('no-color')) { msg += '\x07'; } // Beep!
+if (mode === 'warn') {
+  msg = 'Warning: ' + msg + ' ';
+  msg += (grunt.option('force') ? 'Used --force, continuing.'.underline : 'Use --force to continue.'
+;);
+  msg = msg.yellow;
+} else {
+  msg = ('Fatal error: ' + msg).red;
+}
+...</pre></li>
     </ul>
 
 
@@ -15280,7 +16681,24 @@
       (typeof val === 'boolean' ? '' : '=' + val);
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Display help and quit if the user did --help.
+if (option('help')) {
+  help.display();
+  return;
+}
+
+// A little header stuff.
+verbose.header('Initializing').writeflags(option.<span class="apidocCodeKeywordSpan">flags</span>(), 'Command-line
+ options');
+
+// Determine and output which tasks will be run.
+var tasksSpecified = tasks &amp;&amp; tasks.length &gt; 0;
+tasks = task.parseArgs([tasksSpecified ? tasks : 'default']);
+
+// Initialize tasks.
+task.init(tasks, options);
+...</pre></li>
     </ul>
 
 
@@ -15295,7 +16713,22 @@
     <li>description and source-code<pre class="apidocCodePre">init = function (obj) {
   return (data = obj || {});
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+gExpose(fail, 'warn');
+gExpose(fail, 'fatal');
+
+// Expose the task interface. I've never called this manually, and have no idea
+// how it will work. But it might.
+grunt.tasks = function(tasks, options, done) {
+// Update options with passed-in options.
+option.<span class="apidocCodeKeywordSpan">init</span>(options);
+
+// Display the grunt version and quit if the user did --version.
+var _tasks, _options;
+if (option('version')) {
+  // Not --verbose.
+  log.writeln('grunt v' + grunt.version);
+...</pre></li>
     </ul>
 
 
@@ -15363,7 +16796,22 @@
   // Load all user-specified --tasks.
   (grunt.option('tasks') || []).map(String).forEach(task.loadTasks);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+gExpose(fail, 'warn');
+gExpose(fail, 'fatal');
+
+// Expose the task interface. I've never called this manually, and have no idea
+// how it will work. But it might.
+grunt.tasks = function(tasks, options, done) {
+// Update options with passed-in options.
+option.<span class="apidocCodeKeywordSpan">init</span>(options);
+
+// Display the grunt version and quit if the user did --version.
+var _tasks, _options;
+if (option('version')) {
+  // Not --verbose.
+  log.writeln('grunt v' + grunt.version);
+...</pre></li>
     </ul>
 
 
@@ -15408,7 +16856,23 @@
     grunt.log.error('Local Npm module "' + name + '" not found. Is it installed?');
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    // upwards if not found locally.
+    var filepath = grunt.file.findup('node_modules/' + depName, {
+      cwd: path.resolve('node_modules', name),
+      nocase: true
+    });
+    if (filepath) {
+      // Load this task plugin recursively.
+      task.<span class="apidocCodeKeywordSpan">loadNpmTasks</span>(path.relative(root, filepath));
+    }
+  });
+  loadTaskDepth--;
+  return;
+}
+
+// Process task plugins.
+...</pre></li>
     </ul>
 
 
@@ -15559,7 +17023,23 @@
 
   return files;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+this.target = target;
+// Recreate flags object so that the target isn't set as a flag.
+this.flags = {};
+this.args.forEach(function(arg) { this.flags[arg] = true; }, this);
+// Expose data on `this` (as well as task.current).
+this.data = grunt.config([name, target]);
+// Expose normalized files object.
+this.files = task.<span class="apidocCodeKeywordSpan">normalizeMultiTaskFiles</span>(this.data, target);
+// Expose normalized, flattened, uniqued array of src files.
+Object.defineProperty(this, 'filesSrc', {
+  enumerable: true,
+  get: function() {
+    return grunt.util._(this.files).chain().map('src').flatten().uniq().value();
+  }.bind(this)
+});
+...</pre></li>
     </ul>
 
 
@@ -15705,7 +17185,23 @@
   };
   return task;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// If optional "info" string is omitted, shuffle arguments a bit.
+if (fn == null) {
+  fn = info;
+  info = 'Custom multi task.';
+}
+// Store a reference to the task object, in case the task gets renamed.
+var thisTask;
+task.<span class="apidocCodeKeywordSpan">registerTask</span>(name, info, function(target) {
+  // Guaranteed to always be the actual task name.
+  var name = thisTask.name;
+  // Arguments (sans target) as an array.
+  this.args = grunt.util.toArray(arguments).slice(1);
+  // If a target wasn't specified, run this task once for each target.
+  if (!target || target === '*') {
+    return task.runAllTargets(name, this.args);
+...</pre></li>
     </ul>
 
 
@@ -15759,7 +17255,23 @@
     task.run([taskname, target].concat(args || []).join(':'));
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  task.registerTask(name, info, function(target) {
+// Guaranteed to always be the actual task name.
+var name = thisTask.name;
+// Arguments (sans target) as an array.
+this.args = grunt.util.toArray(arguments).slice(1);
+// If a target wasn't specified, run this task once for each target.
+if (!target || target === '*') {
+  return task.<span class="apidocCodeKeywordSpan">runAllTargets</span>(name, this.args);
+} else if (!isValidMultiTaskTarget(target)) {
+  throw new Error('Invalid target "' + target + '" specified.');
+}
+// Fail if any required config properties have been omitted.
+this.requiresConfig([name, target]);
+// Return an options object with the specified defaults overwritten by task-
+// and/or target-specific overrides, via the "options" property.
+...</pre></li>
     </ul>
 
 
@@ -15791,7 +17303,23 @@
     escape: new RegExp(a + '-' + b, 'g')
   };
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  interpolate: new RegExp(a + '=' + b, 'g'),
+  escape: new RegExp(a + '-' + b, 'g')
+};
+};
+
+// The underscore default template syntax should be a pretty sane default for
+// the config system.
+template.<span class="apidocCodeKeywordSpan">addDelimiters</span>('config', '&lt;%', '%&gt;');
+
+// Set Lo-Dash template delimiters.
+template.setDelimiters = function(name) {
+// Get the appropriate delimiters.
+var delimiters = allDelimiters[name in allDelimiters ? name : 'config'];
+// Tell Lo-Dash which delimiters to use.
+grunt.util._.extend(grunt.util._.templateSettings, delimiters.lodash);
+...</pre></li>
     </ul>
 
 
@@ -15884,7 +17412,23 @@
         return match.slice(1, match.length - 1);
       });
     }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+var template = module.exports = {};
+
+// External libs.
+template.date = require('dateformat');
+
+// Format today's date.
+template.today = function(format) {
+  return template.<span class="apidocCodeKeywordSpan">date</span>(new Date(), format);
+};
+
+// Template delimiters.
+var allDelimiters = {};
+
+// Initialize template delimiters.
+template.addDelimiters = function(name, opener, closer) {
+...</pre></li>
     </ul>
 
 
@@ -15932,7 +17476,23 @@
   // Normalize linefeeds and return.
   return grunt.util.normalizelf(tmpl);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Match '&lt;%= FOO %&gt;' where FOO is a propString, eg. foo or foo.bar but not
+// a method call like foo() or foo.bar().
+var propStringTmplRe = /^&lt;%=\s*([a-z0-9_$]+(?:\.[a-z0-9_$]+)*)\s*%&gt;$/i;
+
+// Get config data, recursively processing templates.
+config.get = function(prop) {
+return config.<span class="apidocCodeKeywordSpan">process</span>(config.getRaw(prop));
+};
+
+// Expand a config value recursively. Used for post-processing raw values
+// already retrieved from the config.
+config.process = function(raw) {
+return grunt.util.recurse(raw, function(value) {
+  // If the value is not a string, return it.
+...</pre></li>
     </ul>
 
 
@@ -15952,7 +17512,23 @@
   // Return the delimiters.
   return delimiters;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+return delimiters;
+};
+
+// Process template + data with Lo-Dash.
+template.process = function(tmpl, options) {
+if (!options) { options = {}; }
+// Set delimiters, and get a opening match character.
+var delimiters = template.<span class="apidocCodeKeywordSpan">setDelimiters</span>(options.delimiters);
+// Clone data, initializing to config data or empty object if omitted.
+var data = Object.create(options.data || grunt.config.data || {});
+// Expose grunt so that grunt utilities can be accessed, but only if it
+// doesn't conflict with an existing .grunt property.
+if (!('grunt' in data)) { data.grunt = grunt; }
+// Keep track of last change.
+var last = tmpl;
+...</pre></li>
     </ul>
 
 
@@ -15985,7 +17561,23 @@
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">n/a</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// If no src/dest or files were specified, return an empty files array.
+if (files.length === 0) {
+  grunt.verbose.writeln('File: ' + '[no files]'.yellow);
+  return [];
+}
+
+// Process all normalized file objects.
+files = grunt.util.<span class="apidocCodeKeywordSpan">_</span>(files).chain().forEach(function(obj) {
+  if (!('src' in obj) || !obj.src) { return; }
+  // Normalize .src properties to flattened array.
+  if (Array.isArray(obj.src)) {
+    obj.src = grunt.util._.flatten(obj.src);
+  } else {
+    obj.src = [obj.src];
+  }
+...</pre></li>
     </ul>
 
 
@@ -16028,7 +17620,23 @@
   if (origError) { err.origError = origError; }
   return err;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  return '"' + prop + '"';
+});
+if (config.data &amp;&amp; failProps.length === 0) {
+  grunt.verbose.ok();
+  return true;
+} else {
+  grunt.verbose.or.write(msg);
+  grunt.log.<span class="apidocCodeKeywordSpan">error</span>().error('Unable to process task.');
+  if (!config.data) {
+    throw grunt.util.error('Unable to load config.');
+  } else {
+    throw grunt.util.error('Required config propert' +
+      p(failProps.length, 'y/ies') + ' ' + failProps.join(', ') + ' missing.');
+  }
+}
+...</pre></li>
     </ul>
 
 
@@ -16071,7 +17679,23 @@
     process.exit(exitCode);
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    fail.report();
+
+    if (done) {
+      // Execute "done" function when done (only if passed, of course).
+      done();
+    } else {
+      // Otherwise, explicitly exit.
+      util.<span class="apidocCodeKeywordSpan">exit</span>(0);
+    }
+  }
+});
+
+// Execute all tasks, in order. Passing each task individually in a forEach
+// allows the error callback to execute multiple times.
+tasks.forEach(function(name) { task.run(name); });
+...</pre></li>
     </ul>
 
 
@@ -16089,7 +17713,23 @@
   // Everything else.
   return kindsOf[kindsOf.toString.call(value)] || 'object';
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+});
+return result;
+};
+
+// Match a filepath or filepaths against one or more wildcard patterns. Returns
+// all matching filepaths.
+file.match = function(options, patterns, filepaths) {
+if (grunt.util.<span class="apidocCodeKeywordSpan">kindOf</span>(options) !== 'object') {
+  filepaths = patterns;
+  patterns = options;
+  options = {};
+}
+// Return empty set if either patterns or filepaths was omitted.
+if (patterns == null || filepaths == null) { return []; }
+// Normalize patterns and filepaths to arrays.
+...</pre></li>
     </ul>
 
 
@@ -16104,7 +17744,17 @@
     <li>description and source-code<pre class="apidocCodePre">normalizelf = function (str) {
   return str.replace(/\r\n|\n/g, util.linefeed);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+        'escaped as \\\\n and \\\\r. (grunt 0.4.0+)');
+    }
+    // Slightly better error message.
+    e.message = 'An error occurred while processing a template (' + e.message + ').';
+    grunt.warn(e, grunt.fail.code.TEMPLATE_ERROR);
+  }
+  // Normalize linefeeds and return.
+  return grunt.util.<span class="apidocCodeKeywordSpan">normalizelf</span>(tmpl);
+};
+...</pre></li>
     </ul>
 
 
@@ -16169,7 +17819,23 @@
   }
   return recurse(value, fn, fnContinue, {objs: [], path: ''});
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+config.get = function(prop) {
+return config.process(config.getRaw(prop));
+};
+
+// Expand a config value recursively. Used for post-processing raw values
+// already retrieved from the config.
+config.process = function(raw) {
+return grunt.util.<span class="apidocCodeKeywordSpan">recurse</span>(raw, function(value) {
+  // If the value is not a string, return it.
+  if (typeof value !== 'string') { return value; }
+  // If possible, access the specified property via config.get, in case it
+  // doesn't refer to a string, but instead refers to an object or array.
+  var matches = value.match(propStringTmplRe);
+  var result;
+  if (matches) {
+...</pre></li>
     </ul>
 
 
@@ -16291,7 +17957,23 @@
 
   return func(value);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+return (config.data = obj || {});
+};
+
+// Test to see if required config params have been defined. If not, throw an
+// exception (use this inside of a task).
+config.requires = function() {
+var p = grunt.util.pluralize;
+var props = grunt.util.<span class="apidocCodeKeywordSpan">toArray</span>(arguments).map(config.getPropString);
+var msg = 'Verifying propert' + p(props.length, 'y/ies') +
+  ' ' + grunt.log.wordlist(props) + ' exist' + p(props.length, 's') +
+  ' in config...';
+grunt.verbose.write(msg);
+var failProps = config.data &amp;&amp; props.filter(function(prop) {
+  return config.get(prop) == null;
+}).map(function(prop) {
+...</pre></li>
     </ul>
 
 
@@ -16319,7 +18001,23 @@
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">n/a</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// If no src/dest or files were specified, return an empty files array.
+if (files.length === 0) {
+  grunt.verbose.writeln('File: ' + '[no files]'.yellow);
+  return [];
+}
+
+// Process all normalized file objects.
+files = grunt.util.<span class="apidocCodeKeywordSpan">_</span>(files).chain().forEach(function(obj) {
+  if (!('src' in obj) || !obj.src) { return; }
+  // Normalize .src properties to flattened array.
+  if (Array.isArray(obj.src)) {
+    obj.src = grunt.util._.flatten(obj.src);
+  } else {
+    obj.src = [obj.src];
+  }
+...</pre></li>
     </ul>
 
 
@@ -16650,7 +18348,23 @@
   otherArgs[start] = array;
   return apply(func, this, otherArgs);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Expose some grunt metadata.
+grunt.package = require('../package.json');
+grunt.version = grunt.package.version;
+
+// Expose specific grunt lib methods on grunt.
+function gExpose(obj, methodName, newMethodName) {
+  grunt[newMethodName || methodName] = obj[methodName].<span class="apidocCodeKeywordSpan">bind</span>(obj);
+}
+gExpose(task, 'registerTask');
+gExpose(task, 'registerMultiTask');
+gExpose(task, 'registerInitTask');
+gExpose(task, 'renameTask');
+gExpose(task, 'loadTasks');
+gExpose(task, 'loadNpmTasks');
+...</pre></li>
     </ul>
 
 
@@ -16855,7 +18569,23 @@
   result.__chain__ = true;
   return result;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// If no src/dest or files were specified, return an empty files array.
+if (files.length === 0) {
+  grunt.verbose.writeln('File: ' + '[no files]'.yellow);
+  return [];
+}
+
+// Process all normalized file objects.
+files = grunt.util._(files).<span class="apidocCodeKeywordSpan">chain</span>().forEach(function(obj) {
+  if (!('src' in obj) || !obj.src) { return; }
+  // Normalize .src properties to flattened array.
+  if (Array.isArray(obj.src)) {
+    obj.src = grunt.util._.flatten(obj.src);
+  } else {
+    obj.src = [obj.src];
+  }
+...</pre></li>
     </ul>
 
 
@@ -17007,7 +18737,23 @@
     <li>description and source-code<pre class="apidocCodePre">function clone(value) {
   return baseClone(value);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Add task to registry.
+registry.tasks.push(name);
+// Register task.
+parent.registerTask.apply(task, arguments);
+// This task, now that it's been registered.
+var thisTask = task._tasks[name];
+// Metadata about the current task.
+thisTask.meta = grunt.util._.<span class="apidocCodeKeywordSpan">clone</span>(registry.meta);
+// Override task function.
+var _fn = thisTask.fn;
+thisTask.fn = function(arg) {
+  // Guaranteed to always be the actual task name.
+  var name = thisTask.name;
+  // Initialize the errorcount for this task.
+  errorcount = grunt.fail.errorcount;
+...</pre></li>
     </ul>
 
 
@@ -17112,7 +18858,23 @@
   otherArgs[start] = array;
   return apply(func, this, otherArgs);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Expose task.requires on `this`.
+this.requires = task.requires.bind(task);
+// Expose config.requires on `this`.
+this.requiresConfig = grunt.config.requires;
+// Return an options object with the specified defaults overwritten by task-
+// specific overrides, via the "options" property.
+this.options = function() {
+  var args = [{}].<span class="apidocCodeKeywordSpan">concat</span>(grunt.util.toArray(arguments)).concat([
+    grunt.config([name, 'options'])
+  ]);
+  var options = grunt.util._.extend.apply(null, args);
+  grunt.verbose.writeflags(options, 'Options');
+  return options;
+};
+// If this task was an alias or a multi task called without a target,
+...</pre></li>
     </ul>
 
 
@@ -17231,7 +18993,22 @@
   var result = baseCreate(prototype);
   return properties ? baseAssign(result, properties) : result;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+var grunt = require('../grunt');
+
+// Nodejs libs.
+var path = require('path');
+
+// Extend generic "task" util lib.
+var parent = grunt.util.task.<span class="apidocCodeKeywordSpan">create</span>();
+
+// The module to be exported.
+var task = module.exports = Object.create(parent);
+
+// A temporary registry of tasks and metadata.
+var registry = {tasks: [], untasks: [], meta: {}};
+...</pre></li>
     </ul>
 
 
@@ -17501,7 +19278,23 @@
   otherArgs[start] = array;
   return apply(func, this, otherArgs);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+var extDotRe = {
+first: /(\.[^\/]*)?$/,
+last: /(\.[^\/\.]*)?$/,
+};
+
+// Build a multi task "files" object dynamically.
+file.expandMapping = function(patterns, destBase, options) {
+options = grunt.util._.<span class="apidocCodeKeywordSpan">defaults</span>({}, options, {
+  extDot: 'first',
+  rename: function(destBase, destPath) {
+    return path.join(destBase || '', destPath);
+  }
+});
+var files = [];
+var fileByDest = {};
+...</pre></li>
     </ul>
 
 
@@ -17637,7 +19430,23 @@
   otherArgs[start] = array;
   return apply(func, this, otherArgs);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    var exclusion = pattern.indexOf('!') === 0;
+    // If the pattern is an exclusion, remove the !
+    if (exclusion) { pattern = pattern.slice(1); }
+    // Find all matching files for this pattern.
+    var matches = fn(pattern);
+    if (exclusion) {
+      // If an exclusion, remove matching files.
+      result = grunt.util._.<span class="apidocCodeKeywordSpan">difference</span>(result, matches);
+    } else {
+      // Otherwise add matching files.
+      result = grunt.util._.union(result, matches);
+    }
+  });
+  return result;
+};
+...</pre></li>
     </ul>
 
 
@@ -17921,7 +19730,23 @@
   }
   return func(collection, getIteratee(predicate, 3));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+};
+
+// Initialize tasks.
+task.init = function(tasks, options) {
+if (!options) { options = {}; }
+
+// Were only init tasks specified?
+var allInit = tasks.length &gt; 0 &amp;&amp; tasks.<span class="apidocCodeKeywordSpan">every</span>(function(name) {
+  var obj = task._taskPlusArgs(name).task;
+  return obj &amp;&amp; obj.init;
+});
+
+// Get any local Gruntfile or tasks that might exist. Use --gruntfile override
+// if specified, otherwise search the current directory or any parent.
+var gruntfile, msg;
+...</pre></li>
     </ul>
 
 
@@ -17977,7 +19802,23 @@
   otherArgs[start] = array;
   return apply(func, this, otherArgs);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+if (Array.isArray(obj.src)) {
+  obj.src = grunt.util._.flatten(obj.src);
+} else {
+  obj.src = [obj.src];
+}
+  }).map(function(obj) {
+// Build options object, removing unwanted properties.
+var expandOptions = grunt.util._.<span class="apidocCodeKeywordSpan">extend</span>({}, obj);
+delete expandOptions.src;
+delete expandOptions.dest;
+
+// Expand file mappings.
+if (obj.expand) {
+  return grunt.file.expandMapping(obj.src, obj.dest, expandOptions).map(function(mapObj) {
+    // Copy obj properties to result.
+...</pre></li>
     </ul>
 
 
@@ -18050,7 +19891,23 @@
   var func = isArray(collection) ? arrayFilter : baseFilter;
   return func(collection, getIteratee(predicate, 3));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+config.requires = function() {
+var p = grunt.util.pluralize;
+var props = grunt.util.toArray(arguments).map(config.getPropString);
+var msg = 'Verifying propert' + p(props.length, 'y/ies') +
+  ' ' + grunt.log.wordlist(props) + ' exist' + p(props.length, 's') +
+  ' in config...';
+grunt.verbose.write(msg);
+var failProps = config.data &amp;&amp; props.<span class="apidocCodeKeywordSpan">filter</span>(function(prop) {
+  return config.get(prop) == null;
+}).map(function(prop) {
+  return '"' + prop + '"';
+});
+if (config.data &amp;&amp; failProps.length === 0) {
+  grunt.verbose.ok();
+  return true;
+...</pre></li>
     </ul>
 
 
@@ -18200,7 +20057,23 @@
   var length = array ? array.length : 0;
   return length ? baseFlatten(array) : [];
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+}
+
+// Process all normalized file objects.
+files = grunt.util._(files).chain().forEach(function(obj) {
+  if (!('src' in obj) || !obj.src) { return; }
+  // Normalize .src properties to flattened array.
+  if (Array.isArray(obj.src)) {
+    obj.src = grunt.util._.<span class="apidocCodeKeywordSpan">flatten</span>(obj.src);
+  } else {
+    obj.src = [obj.src];
+  }
+}).map(function(obj) {
+  // Build options object, removing unwanted properties.
+  var expandOptions = grunt.util._.extend({}, obj);
+  delete expandOptions.src;
+...</pre></li>
     </ul>
 
 
@@ -18216,7 +20089,23 @@
   var length = array ? array.length : 0;
   return length ? baseFlatten(array, true) : [];
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Process specified wildcard glob patterns or filenames against a
+// callback, excluding and uniquing files in the result set.
+var processPatterns = function(patterns, fn) {
+// Filepaths to return.
+var result = [];
+// Iterate over flattened patterns array.
+grunt.util._.<span class="apidocCodeKeywordSpan">flattenDeep</span>(patterns).forEach(function(pattern) {
+  // If the first character is ! it should be omitted
+  var exclusion = pattern.indexOf('!') === 0;
+  // If the pattern is an exclusion, remove the !
+  if (exclusion) { pattern = pattern.slice(1); }
+  // Find all matching files for this pattern.
+  var matches = fn(pattern);
+  if (exclusion) {
+...</pre></li>
     </ul>
 
 
@@ -18342,7 +20231,22 @@
     ? arrayEach(collection, iteratee)
     : baseEach(collection, toFunction(iteratee));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+  // Display available tasks (for shell completion, etc).
+  _tasks = Object.keys(grunt.task._tasks).sort();
+  verbose.writeln('Available tasks: ' + _tasks.join(' '));
+
+  // Display available options (for shell completion, etc).
+  _options = [];
+  Object.keys(grunt.cli.optlist).<span class="apidocCodeKeywordSpan">forEach</span>(function(long) {
+    var o = grunt.cli.optlist[long];
+    _options.push('--' + (o.negate ? 'no-' : '') + long);
+    if (o.short) { _options.push('-' + o.short); }
+  });
+  verbose.writeln('Available options: ' + _options.join(' '));
+}
+...</pre></li>
     </ul>
 
 
@@ -18488,7 +20392,23 @@
   var result = object == null ? undefined : baseGet(object, path);
   return result === undefined ? defaultValue : result;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Get/set config data. If value was passed, set. Otherwise, get.
+var config = module.exports = function(prop, value) {
+  if (arguments.length === 2) {
+    // Two arguments were passed, set the property's value.
+    return config.set(prop, value);
+  } else {
+    // Get the property's value (or the entire data object).
+    return config.<span class="apidocCodeKeywordSpan">get</span>(prop);
+  }
+};
+
+// The actual config data.
+config.data = {};
+
+// Escape any . in name with \. so dot-based namespacing works properly.
+...</pre></li>
     </ul>
 
 
@@ -18681,7 +20601,23 @@
   }
   return baseIndexOf(array, value, fromIndex);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// callback, excluding and uniquing files in the result set.
+var processPatterns = function(patterns, fn) {
+// Filepaths to return.
+var result = [];
+// Iterate over flattened patterns array.
+grunt.util._.flattenDeep(patterns).forEach(function(pattern) {
+  // If the first character is ! it should be omitted
+  var exclusion = pattern.<span class="apidocCodeKeywordSpan">indexOf</span>('!') === 0;
+  // If the pattern is an exclusion, remove the !
+  if (exclusion) { pattern = pattern.slice(1); }
+  // Find all matching files for this pattern.
+  var matches = fn(pattern);
+  if (exclusion) {
+    // If an exclusion, remove matching files.
+    result = grunt.util._.difference(result, matches);
+...</pre></li>
     </ul>
 
 
@@ -18941,7 +20877,23 @@
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function isArray() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Escape any . in name with \. so dot-based namespacing works properly.
+config.escape = function(str) {
+return str.replace(/\./g, '\\.');
+};
+
+// Return prop as a string.
+config.getPropString = function(prop) {
+return Array.<span class="apidocCodeKeywordSpan">isArray</span>(prop) ? prop.map(config.escape).join('.') : prop;
+};
+
+// Get raw, unprocessed config data.
+config.getRaw = function(prop) {
+if (prop) {
+  // Prop was passed, get that specific property's value.
+  return grunt.util.namespace.get(config.data, config.getPropString(prop));
+...</pre></li>
     </ul>
 
 
@@ -19033,7 +20985,23 @@
     <li>description and source-code<pre class="apidocCodePre">isBuffer = function (value) {
   return value instanceof Buffer;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+var nowrite = grunt.option('no-write');
+grunt.verbose.write((nowrite ? 'Not actually writing ' : 'Writing ') + filepath + '...');
+// Create path, if necessary.
+file.mkdir(path.dirname(filepath));
+try {
+  // If contents is already a Buffer, don't try to encode it. If no encoding
+  // was specified, use the default.
+  if (!Buffer.<span class="apidocCodeKeywordSpan">isBuffer</span>(contents)) {
+    contents = iconv.encode(contents, options.encoding || file.defaultEncoding);
+  }
+  // Actually write file.
+  if (!nowrite) {
+    fs.writeFileSync(filepath, contents, 'mode' in options ? {mode: options.mode} : {});
+  }
+  grunt.verbose.ok();
+...</pre></li>
     </ul>
 
 
@@ -19229,7 +21197,23 @@
     <li>description and source-code<pre class="apidocCodePre">function isMatch(object, source) {
   return object === source || baseIsMatch(object, source, getMatchData(source));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Read a file, optionally processing its content, then write the output.
+file._copy = function(srcpath, destpath, options) {
+if (!options) { options = {}; }
+// If a process function was specified, and noProcess isn't true or doesn't
+// match the srcpath, process the file's source.
+var process = options.process &amp;&amp; options.noProcess !== true &amp;&amp;
+  !(options.noProcess &amp;&amp; file.<span class="apidocCodeKeywordSpan">isMatch</span>(options.noProcess, srcpath));
+// If the file will be processed, use the encoding as-specified. Otherwise,
+// use an encoding of null to force the file to be read/written as a Buffer.
+var readWriteOptions = process ? options : {encoding: null};
+// Actually read the file.
+var contents = file.read(srcpath, readWriteOptions);
+if (process) {
+  grunt.verbose.write('Processing source...');
+...</pre></li>
     </ul>
 
 
@@ -19555,7 +21539,23 @@
     <li>description and source-code<pre class="apidocCodePre">function join(array, separator) {
   return array ? nativeJoin.call(array, separator) : '';
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Initialize task system so that available tasks can be listed.
+grunt.task.init([], {help: true});
+// Re-enable logging.
+grunt.log.muted = false;
+
+// Display available tasks (for shell completion, etc).
+_tasks = Object.keys(grunt.task._tasks).sort();
+verbose.writeln('Available tasks: ' + _tasks.<span class="apidocCodeKeywordSpan">join</span>(' '));
+
+// Display available options (for shell completion, etc).
+_options = [];
+Object.keys(grunt.cli.optlist).forEach(function(long) {
+  var o = grunt.cli.optlist[long];
+  _options.push('--' + (o.negate ? 'no-' : '') + long);
+  if (o.short) { _options.push('-' + o.short); }
+...</pre></li>
     </ul>
 
 
@@ -19619,7 +21619,23 @@
   }
   return result;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+grunt.log.muted = true;
+// Initialize task system so that available tasks can be listed.
+grunt.task.init([], {help: true});
+// Re-enable logging.
+grunt.log.muted = false;
+
+// Display available tasks (for shell completion, etc).
+_tasks = Object.<span class="apidocCodeKeywordSpan">keys</span>(grunt.task._tasks).sort();
+verbose.writeln('Available tasks: ' + _tasks.join(' '));
+
+// Display available options (for shell completion, etc).
+_options = [];
+Object.keys(grunt.cli.optlist).forEach(function(long) {
+  var o = grunt.cli.optlist[long];
+  _options.push('--' + (o.negate ? 'no-' : '') + long);
+...</pre></li>
     </ul>
 
 
@@ -19936,7 +21952,23 @@
   var func = isArray(collection) ? arrayMap : baseMap;
   return func(collection, getIteratee(iteratee, 3));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Escape any . in name with \. so dot-based namespacing works properly.
+config.escape = function(str) {
+return str.replace(/\./g, '\\.');
+};
+
+// Return prop as a string.
+config.getPropString = function(prop) {
+return Array.isArray(prop) ? prop.<span class="apidocCodeKeywordSpan">map</span>(config.escape).join('.') : prop;
+};
+
+// Get raw, unprocessed config data.
+config.getRaw = function(prop) {
+if (prop) {
+  // Prop was passed, get that specific property's value.
+  return grunt.util.namespace.get(config.data, config.getPropString(prop));
+...</pre></li>
     </ul>
 
 
@@ -20044,7 +22076,23 @@
     ? baseExtremum(array, identity, gt)
     : undefined;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Nodejs libs.
+var path = require('path');
+
+// Set column widths.
+var col1len = 0;
+exports.initCol1 = function(str) {
+  col1len = Math.<span class="apidocCodeKeywordSpan">max</span>(col1len, str.length);
+};
+exports.initWidths = function() {
+  // Widths for options/tasks table output.
+  exports.widths = [1, col1len, 2, 76 - col1len];
+};
+
+// Render an array in table form.
+...</pre></li>
     </ul>
 
 
@@ -20141,7 +22189,23 @@
   otherArgs[start] = array;
   return apply(func, this, otherArgs);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Set config data.
+config.set = function(prop, value) {
+return grunt.util.namespace.set(config.data, config.getPropString(prop), value);
+};
+
+// Deep merge config data.
+config.merge = function(obj) {
+grunt.util._.<span class="apidocCodeKeywordSpan">merge</span>(config.data, obj);
+return config.data;
+};
+
+// Initialize config data.
+config.init = function(obj) {
+grunt.verbose.write('Initializing config...').ok();
+// Initialize and return data.
+...</pre></li>
     </ul>
 
 
@@ -20540,7 +22604,22 @@
     <li>description and source-code<pre class="apidocCodePre">function once(func) {
   return before(2, func);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// When called, sets the async flag and returns a function that can
+// be used to continue processing the queue.
+context.async = function() {
+  async = true;
+  // The returned function should execute asynchronously in case
+  // someone tries to do this.async()(); inside a task (WTF).
+  return grunt.util._.<span class="apidocCodeKeywordSpan">once</span>(function(success) {
+    setTimeout(function() { complete(success); }, 1);
+  });
+};
+
+// Expose some information about the currently-running task.
+this.current = context;
+...</pre></li>
     </ul>
 
 
@@ -20736,7 +22815,24 @@
       return strRepeat(padStr, padlen) + str;
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Widths for options/tasks table output.
+exports.widths = [1, col1len, 2, 76 - col1len];
+};
+
+// Render an array in table form.
+exports.table = function(arr) {
+arr.forEach(function(item) {
+  grunt.log.writetableln(exports.widths, ['', grunt.util._.<span class="apidocCodeKeywordSpan">pad</span>(item[0], col1len
+), '', item[1]]);
+});
+};
+
+// Methods to run, in-order.
+exports.queue = [
+'initOptions',
+'initTasks',
+...</pre></li>
     </ul>
 
 
@@ -21294,7 +23390,24 @@
 
   return func(collection, getIteratee(iteratee, 4), accumulator, initAccum, baseEach);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Like mkdir -p. Create a directory and any intermediary directories.
+file.mkdir = function(dirpath, mode) {
+if (grunt.option('no-write')) { return; }
+// Set directory mode in a strict-mode-friendly way.
+if (mode == null) {
+  mode = parseInt('0777', 8) &amp; (~process.umask());
+}
+dirpath.split(pathSeparatorRe).<span class="apidocCodeKeywordSpan">reduce</span>(function(parts, part) {
+  parts += part + '/';
+  var subpath = path.resolve(parts);
+  if (!file.exists(subpath)) {
+    try {
+      fs.mkdirSync(subpath, mode);
+    } catch (e) {
+      throw grunt.util.error('Unable to create directory "' + subpath + '" (Error code: ' + e.code
+ + ').', e);
+...</pre></li>
     </ul>
 
 
@@ -21406,7 +23519,22 @@
 
   return args.length &lt; 3 ? string : string.replace(args[1], args[2]);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+};
+
+// The actual config data.
+config.data = {};
+
+// Escape any . in name with \. so dot-based namespacing works properly.
+config.escape = function(str) {
+  return str.<span class="apidocCodeKeywordSpan">replace</span>(/\./g, '\\.');
+};
+
+// Return prop as a string.
+config.getPropString = function(prop) {
+  return Array.isArray(prop) ? prop.map(config.escape).join('.') : prop;
+};
+...</pre></li>
     </ul>
 
 
@@ -21776,7 +23904,23 @@
     <li>description and source-code<pre class="apidocCodePre">function set(object, path, value) {
   return object == null ? object : baseSet(object, path, value);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+var grunt = require('../grunt');
+
+// Get/set config data. If value was passed, set. Otherwise, get.
+var config = module.exports = function(prop, value) {
+  if (arguments.length === 2) {
+    // Two arguments were passed, set the property's value.
+    return config.<span class="apidocCodeKeywordSpan">set</span>(prop, value);
+  } else {
+    // Get the property's value (or the entire data object).
+    return config.get(prop);
+  }
+};
+
+// The actual config data.
+...</pre></li>
     </ul>
 
 
@@ -21856,7 +24000,23 @@
   }
   return baseSlice(array, start, end);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Filepaths to return.
+var result = [];
+// Iterate over flattened patterns array.
+grunt.util._.flattenDeep(patterns).forEach(function(pattern) {
+  // If the first character is ! it should be omitted
+  var exclusion = pattern.indexOf('!') === 0;
+  // If the pattern is an exclusion, remove the !
+  if (exclusion) { pattern = pattern.<span class="apidocCodeKeywordSpan">slice</span>(1); }
+  // Find all matching files for this pattern.
+  var matches = fn(pattern);
+  if (exclusion) {
+    // If an exclusion, remove matching files.
+    result = grunt.util._.difference(result, matches);
+  } else {
+    // Otherwise add matching files.
+...</pre></li>
     </ul>
 
 
@@ -22094,7 +24254,22 @@
   arr.splice(~~i, ~~howmany, substr);
   return arr.join('');
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  nextTask();
+};
+
+// Clear remaining tasks from the queue.
+Task.prototype.clearQueue = function(options) {
+  if (!options) { options = {}; }
+  if (options.untilMarker) {
+    this._queue.<span class="apidocCodeKeywordSpan">splice</span>(0, this._queue.indexOf(this._marker) + 1);
+  } else {
+    this._queue = [];
+  }
+  // Make chainable!
+  return this;
+};
+...</pre></li>
     </ul>
 
 
@@ -22109,7 +24284,24 @@
     <li>description and source-code<pre class="apidocCodePre">function split(string, separator, limit) {
   return toString(string).split(separator, limit);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Like mkdir -p. Create a directory and any intermediary directories.
+file.mkdir = function(dirpath, mode) {
+if (grunt.option('no-write')) { return; }
+// Set directory mode in a strict-mode-friendly way.
+if (mode == null) {
+  mode = parseInt('0777', 8) &amp; (~process.umask());
+}
+dirpath.<span class="apidocCodeKeywordSpan">split</span>(pathSeparatorRe).reduce(function(parts, part) {
+  parts += part + '/';
+  var subpath = path.resolve(parts);
+  if (!file.exists(subpath)) {
+    try {
+      fs.mkdirSync(subpath, mode);
+    } catch (e) {
+      throw grunt.util.error('Unable to create directory "' + subpath + '" (Error code: ' + e.code
+ + ').', e);
+...</pre></li>
     </ul>
 
 
@@ -22637,7 +24829,23 @@
   }
   return result;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  multiple arguments and dealing with numbers as options. Be aware previously
+  `--foo bar` used to pass the value `'bar'` to the option `foo`. It will now
+  set the option `foo` to `true` and run the task `bar`.
+-`glob` is upgraded to `~6.0.4` and `minimatch` is upgraded to `~3.0.0`. Results
+  are now sorted by default with `grunt.file.expandMapping()`. Pass the
+  `nosort: true` option if you don't want the results to be sorted.
+- `lodash` was upgraded to `~4.3.0`. Many changes have occurred. Some of which
+  that directly effect Grunt are `grunt.util._.<span class="apidocCodeKeywordSpan">template</span>()` returns a compile
+  function and `grunt.util._.flatten` no longer flattens deeply.
+  `grunt.util._` is deprecated and we highly encourage you to
+  `npm install lodash` and `var _ = require('lodash')` to use `lodash`.
+  Please see the lodash changelog for a full list of changes: https://github.com/lodash/lodash/wiki/Changelog
+- `iconv-lite` is upgraded to `~0.4.13` and strips the BOM by default.
+- `js-yaml` is upgraded to `~3.5.2` and may affect `grunt.file.readYAML`.
+  We encourage you to please `npm install js-yaml` and use
+...</pre></li>
     </ul>
 
 
@@ -22750,7 +24958,23 @@
 
   return func(value);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+return (config.data = obj || {});
+};
+
+// Test to see if required config params have been defined. If not, throw an
+// exception (use this inside of a task).
+config.requires = function() {
+var p = grunt.util.pluralize;
+var props = grunt.util.<span class="apidocCodeKeywordSpan">toArray</span>(arguments).map(config.getPropString);
+var msg = 'Verifying propert' + p(props.length, 'y/ies') +
+  ' ' + grunt.log.wordlist(props) + ' exist' + p(props.length, 's') +
+  ' in config...';
+grunt.verbose.write(msg);
+var failProps = config.data &amp;&amp; props.filter(function(prop) {
+  return config.get(prop) == null;
+}).map(function(prop) {
+...</pre></li>
     </ul>
 
 
@@ -23246,7 +25470,23 @@
   otherArgs[start] = array;
   return apply(func, this, otherArgs);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    // Find all matching files for this pattern.
+    var matches = fn(pattern);
+    if (exclusion) {
+      // If an exclusion, remove matching files.
+      result = grunt.util._.difference(result, matches);
+    } else {
+      // Otherwise add matching files.
+      result = grunt.util._.<span class="apidocCodeKeywordSpan">union</span>(result, matches);
+    }
+  });
+  return result;
+};
+
+// Match a filepath or filepaths against one or more wildcard patterns. Returns
+// all matching filepaths.
+...</pre></li>
     </ul>
 
 
@@ -23331,7 +25571,24 @@
     ? baseUniq(array)
     : [];
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  this.data = grunt.config([name, target]);
+  // Expose normalized files object.
+  this.files = task.normalizeMultiTaskFiles(this.data, target);
+  // Expose normalized, flattened, uniqued array of src files.
+  Object.defineProperty(this, 'filesSrc', {
+    enumerable: true,
+    get: function() {
+      return grunt.util._(this.files).chain().map('src').flatten().<span class="apidocCodeKeywordSpan">uniq</span>().value
+();
+    }.bind(this)
+  });
+  // Call original task function, passing in the target and any other args.
+  return fn.apply(this, this.args);
+});
+
+thisTask = task._tasks[name];
+...</pre></li>
     </ul>
 
 
@@ -24189,7 +26446,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Expose some grunt metadata.
+grunt.package = require('../package.json');
+grunt.version = grunt.package.version;
+
+// Expose specific grunt lib methods on grunt.
+function gExpose(obj, methodName, newMethodName) {
+  grunt[newMethodName || methodName] = obj[methodName].<span class="apidocCodeKeywordSpan">bind</span>(obj);
+}
+gExpose(task, 'registerTask');
+gExpose(task, 'registerMultiTask');
+gExpose(task, 'registerInitTask');
+gExpose(task, 'renameTask');
+gExpose(task, 'loadTasks');
+gExpose(task, 'loadNpmTasks');
+...</pre></li>
     </ul>
 
 
@@ -24396,7 +26669,23 @@
     <li>description and source-code<pre class="apidocCodePre">function wrapperChain() {
   return chain(this);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// If no src/dest or files were specified, return an empty files array.
+if (files.length === 0) {
+  grunt.verbose.writeln('File: ' + '[no files]'.yellow);
+  return [];
+}
+
+// Process all normalized file objects.
+files = grunt.util._(files).<span class="apidocCodeKeywordSpan">chain</span>().forEach(function(obj) {
+  if (!('src' in obj) || !obj.src) { return; }
+  // Normalize .src properties to flattened array.
+  if (Array.isArray(obj.src)) {
+    obj.src = grunt.util._.flatten(obj.src);
+  } else {
+    obj.src = [obj.src];
+  }
+...</pre></li>
     </ul>
 
 
@@ -24588,7 +26877,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Add task to registry.
+registry.tasks.push(name);
+// Register task.
+parent.registerTask.apply(task, arguments);
+// This task, now that it's been registered.
+var thisTask = task._tasks[name];
+// Metadata about the current task.
+thisTask.meta = grunt.util._.<span class="apidocCodeKeywordSpan">clone</span>(registry.meta);
+// Override task function.
+var _fn = thisTask.fn;
+thisTask.fn = function(arg) {
+  // Guaranteed to always be the actual task name.
+  var name = thisTask.name;
+  // Initialize the errorcount for this task.
+  errorcount = grunt.fail.errorcount;
+...</pre></li>
     </ul>
 
 
@@ -24744,7 +27049,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Expose task.requires on `this`.
+this.requires = task.requires.bind(task);
+// Expose config.requires on `this`.
+this.requiresConfig = grunt.config.requires;
+// Return an options object with the specified defaults overwritten by task-
+// specific overrides, via the "options" property.
+this.options = function() {
+  var args = [{}].<span class="apidocCodeKeywordSpan">concat</span>(grunt.util.toArray(arguments)).concat([
+    grunt.config([name, 'options'])
+  ]);
+  var options = grunt.util._.extend.apply(null, args);
+  grunt.verbose.writeflags(options, 'Options');
+  return options;
+};
+// If this task was an alias or a multi task called without a target,
+...</pre></li>
     </ul>
 
 
@@ -24888,7 +27209,22 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+var grunt = require('../grunt');
+
+// Nodejs libs.
+var path = require('path');
+
+// Extend generic "task" util lib.
+var parent = grunt.util.task.<span class="apidocCodeKeywordSpan">create</span>();
+
+// The module to be exported.
+var task = module.exports = Object.create(parent);
+
+// A temporary registry of tasks and metadata.
+var registry = {tasks: [], untasks: [], meta: {}};
+...</pre></li>
     </ul>
 
 
@@ -25080,7 +27416,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+var extDotRe = {
+first: /(\.[^\/]*)?$/,
+last: /(\.[^\/\.]*)?$/,
+};
+
+// Build a multi task "files" object dynamically.
+file.expandMapping = function(patterns, destBase, options) {
+options = grunt.util._.<span class="apidocCodeKeywordSpan">defaults</span>({}, options, {
+  extDot: 'first',
+  rename: function(destBase, destPath) {
+    return path.join(destBase || '', destPath);
+  }
+});
+var files = [];
+var fileByDest = {};
+...</pre></li>
     </ul>
 
 
@@ -25176,7 +27528,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    var exclusion = pattern.indexOf('!') === 0;
+    // If the pattern is an exclusion, remove the !
+    if (exclusion) { pattern = pattern.slice(1); }
+    // Find all matching files for this pattern.
+    var matches = fn(pattern);
+    if (exclusion) {
+      // If an exclusion, remove matching files.
+      result = grunt.util._.<span class="apidocCodeKeywordSpan">difference</span>(result, matches);
+    } else {
+      // Otherwise add matching files.
+      result = grunt.util._.union(result, matches);
+    }
+  });
+  return result;
+};
+...</pre></li>
     </ul>
 
 
@@ -25554,7 +27922,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+};
+
+// Initialize tasks.
+task.init = function(tasks, options) {
+if (!options) { options = {}; }
+
+// Were only init tasks specified?
+var allInit = tasks.length &gt; 0 &amp;&amp; tasks.<span class="apidocCodeKeywordSpan">every</span>(function(name) {
+  var obj = task._taskPlusArgs(name).task;
+  return obj &amp;&amp; obj.init;
+});
+
+// Get any local Gruntfile or tasks that might exist. Use --gruntfile override
+// if specified, otherwise search the current directory or any parent.
+var gruntfile, msg;
+...</pre></li>
     </ul>
 
 
@@ -25602,7 +27986,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+if (Array.isArray(obj.src)) {
+  obj.src = grunt.util._.flatten(obj.src);
+} else {
+  obj.src = [obj.src];
+}
+  }).map(function(obj) {
+// Build options object, removing unwanted properties.
+var expandOptions = grunt.util._.<span class="apidocCodeKeywordSpan">extend</span>({}, obj);
+delete expandOptions.src;
+delete expandOptions.dest;
+
+// Expand file mappings.
+if (obj.expand) {
+  return grunt.file.expandMapping(obj.src, obj.dest, expandOptions).map(function(mapObj) {
+    // Copy obj properties to result.
+...</pre></li>
     </ul>
 
 
@@ -25695,7 +28095,23 @@
   result = this.thru(interceptor);
   return isUnwrapped ? (isTaker ? result.value()[0] : result.value()) : result;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+config.requires = function() {
+var p = grunt.util.pluralize;
+var props = grunt.util.toArray(arguments).map(config.getPropString);
+var msg = 'Verifying propert' + p(props.length, 'y/ies') +
+  ' ' + grunt.log.wordlist(props) + ' exist' + p(props.length, 's') +
+  ' in config...';
+grunt.verbose.write(msg);
+var failProps = config.data &amp;&amp; props.<span class="apidocCodeKeywordSpan">filter</span>(function(prop) {
+  return config.get(prop) == null;
+}).map(function(prop) {
+  return '"' + prop + '"';
+});
+if (config.data &amp;&amp; failProps.length === 0) {
+  grunt.verbose.ok();
+  return true;
+...</pre></li>
     </ul>
 
 
@@ -25944,7 +28360,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+}
+
+// Process all normalized file objects.
+files = grunt.util._(files).chain().forEach(function(obj) {
+  if (!('src' in obj) || !obj.src) { return; }
+  // Normalize .src properties to flattened array.
+  if (Array.isArray(obj.src)) {
+    obj.src = grunt.util._.<span class="apidocCodeKeywordSpan">flatten</span>(obj.src);
+  } else {
+    obj.src = [obj.src];
+  }
+}).map(function(obj) {
+  // Build options object, removing unwanted properties.
+  var expandOptions = grunt.util._.extend({}, obj);
+  delete expandOptions.src;
+...</pre></li>
     </ul>
 
 
@@ -25968,7 +28400,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Process specified wildcard glob patterns or filenames against a
+// callback, excluding and uniquing files in the result set.
+var processPatterns = function(patterns, fn) {
+// Filepaths to return.
+var result = [];
+// Iterate over flattened patterns array.
+grunt.util._.<span class="apidocCodeKeywordSpan">flattenDeep</span>(patterns).forEach(function(pattern) {
+  // If the first character is ! it should be omitted
+  var exclusion = pattern.indexOf('!') === 0;
+  // If the pattern is an exclusion, remove the !
+  if (exclusion) { pattern = pattern.slice(1); }
+  // Find all matching files for this pattern.
+  var matches = fn(pattern);
+  if (exclusion) {
+...</pre></li>
     </ul>
 
 
@@ -26088,7 +28536,22 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+  // Display available tasks (for shell completion, etc).
+  _tasks = Object.keys(grunt.task._tasks).sort();
+  verbose.writeln('Available tasks: ' + _tasks.join(' '));
+
+  // Display available options (for shell completion, etc).
+  _options = [];
+  Object.keys(grunt.cli.optlist).<span class="apidocCodeKeywordSpan">forEach</span>(function(long) {
+    var o = grunt.cli.optlist[long];
+    _options.push('--' + (o.negate ? 'no-' : '') + long);
+    if (o.short) { _options.push('-' + o.short); }
+  });
+  verbose.writeln('Available options: ' + _options.join(' '));
+}
+...</pre></li>
     </ul>
 
 
@@ -26304,7 +28767,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Get/set config data. If value was passed, set. Otherwise, get.
+var config = module.exports = function(prop, value) {
+  if (arguments.length === 2) {
+    // Two arguments were passed, set the property's value.
+    return config.set(prop, value);
+  } else {
+    // Get the property's value (or the entire data object).
+    return config.<span class="apidocCodeKeywordSpan">get</span>(prop);
+  }
+};
+
+// The actual config data.
+config.data = {};
+
+// Escape any . in name with \. so dot-based namespacing works properly.
+...</pre></li>
     </ul>
 
 
@@ -26589,7 +29068,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// callback, excluding and uniquing files in the result set.
+var processPatterns = function(patterns, fn) {
+// Filepaths to return.
+var result = [];
+// Iterate over flattened patterns array.
+grunt.util._.flattenDeep(patterns).forEach(function(pattern) {
+  // If the first character is ! it should be omitted
+  var exclusion = pattern.<span class="apidocCodeKeywordSpan">indexOf</span>('!') === 0;
+  // If the pattern is an exclusion, remove the !
+  if (exclusion) { pattern = pattern.slice(1); }
+  // Find all matching files for this pattern.
+  var matches = fn(pattern);
+  if (exclusion) {
+    // If an exclusion, remove matching files.
+    result = grunt.util._.difference(result, matches);
+...</pre></li>
     </ul>
 
 
@@ -26895,7 +29390,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Escape any . in name with \. so dot-based namespacing works properly.
+config.escape = function(str) {
+return str.replace(/\./g, '\\.');
+};
+
+// Return prop as a string.
+config.getPropString = function(prop) {
+return Array.<span class="apidocCodeKeywordSpan">isArray</span>(prop) ? prop.map(config.escape).join('.') : prop;
+};
+
+// Get raw, unprocessed config data.
+config.getRaw = function(prop) {
+if (prop) {
+  // Prop was passed, get that specific property's value.
+  return grunt.util.namespace.get(config.data, config.getPropString(prop));
+...</pre></li>
     </ul>
 
 
@@ -27039,7 +29550,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+var nowrite = grunt.option('no-write');
+grunt.verbose.write((nowrite ? 'Not actually writing ' : 'Writing ') + filepath + '...');
+// Create path, if necessary.
+file.mkdir(path.dirname(filepath));
+try {
+  // If contents is already a Buffer, don't try to encode it. If no encoding
+  // was specified, use the default.
+  if (!Buffer.<span class="apidocCodeKeywordSpan">isBuffer</span>(contents)) {
+    contents = iconv.encode(contents, options.encoding || file.defaultEncoding);
+  }
+  // Actually write file.
+  if (!nowrite) {
+    fs.writeFileSync(filepath, contents, 'mode' in options ? {mode: options.mode} : {});
+  }
+  grunt.verbose.ok();
+...</pre></li>
     </ul>
 
 
@@ -27327,7 +29854,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Read a file, optionally processing its content, then write the output.
+file._copy = function(srcpath, destpath, options) {
+if (!options) { options = {}; }
+// If a process function was specified, and noProcess isn't true or doesn't
+// match the srcpath, process the file's source.
+var process = options.process &amp;&amp; options.noProcess !== true &amp;&amp;
+  !(options.noProcess &amp;&amp; file.<span class="apidocCodeKeywordSpan">isMatch</span>(options.noProcess, srcpath));
+// If the file will be processed, use the encoding as-specified. Otherwise,
+// use an encoding of null to force the file to be read/written as a Buffer.
+var readWriteOptions = process ? options : {encoding: null};
+// Actually read the file.
+var contents = file.read(srcpath, readWriteOptions);
+if (process) {
+  grunt.verbose.write('Processing source...');
+...</pre></li>
     </ul>
 
 
@@ -27807,7 +30350,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Initialize task system so that available tasks can be listed.
+grunt.task.init([], {help: true});
+// Re-enable logging.
+grunt.log.muted = false;
+
+// Display available tasks (for shell completion, etc).
+_tasks = Object.keys(grunt.task._tasks).sort();
+verbose.writeln('Available tasks: ' + _tasks.<span class="apidocCodeKeywordSpan">join</span>(' '));
+
+// Display available options (for shell completion, etc).
+_options = [];
+Object.keys(grunt.cli.optlist).forEach(function(long) {
+  var o = grunt.cli.optlist[long];
+  _options.push('--' + (o.negate ? 'no-' : '') + long);
+  if (o.short) { _options.push('-' + o.short); }
+...</pre></li>
     </ul>
 
 
@@ -27879,7 +30438,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+grunt.log.muted = true;
+// Initialize task system so that available tasks can be listed.
+grunt.task.init([], {help: true});
+// Re-enable logging.
+grunt.log.muted = false;
+
+// Display available tasks (for shell completion, etc).
+_tasks = Object.<span class="apidocCodeKeywordSpan">keys</span>(grunt.task._tasks).sort();
+verbose.writeln('Available tasks: ' + _tasks.join(' '));
+
+// Display available options (for shell completion, etc).
+_options = [];
+Object.keys(grunt.cli.optlist).forEach(function(long) {
+  var o = grunt.cli.optlist[long];
+  _options.push('--' + (o.negate ? 'no-' : '') + long);
+...</pre></li>
     </ul>
 
 
@@ -28281,7 +30856,23 @@
   result = this.thru(interceptor);
   return isUnwrapped ? (isTaker ? result.value()[0] : result.value()) : result;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Escape any . in name with \. so dot-based namespacing works properly.
+config.escape = function(str) {
+return str.replace(/\./g, '\\.');
+};
+
+// Return prop as a string.
+config.getPropString = function(prop) {
+return Array.isArray(prop) ? prop.<span class="apidocCodeKeywordSpan">map</span>(config.escape).join('.') : prop;
+};
+
+// Get raw, unprocessed config data.
+config.getRaw = function(prop) {
+if (prop) {
+  // Prop was passed, get that specific property's value.
+  return grunt.util.namespace.get(config.data, config.getPropString(prop));
+...</pre></li>
     </ul>
 
 
@@ -28425,7 +31016,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Nodejs libs.
+var path = require('path');
+
+// Set column widths.
+var col1len = 0;
+exports.initCol1 = function(str) {
+  col1len = Math.<span class="apidocCodeKeywordSpan">max</span>(col1len, str.length);
+};
+exports.initWidths = function() {
+  // Widths for options/tasks table output.
+  exports.widths = [1, col1len, 2, 76 - col1len];
+};
+
+// Render an array in table form.
+...</pre></li>
     </ul>
 
 
@@ -28521,7 +31128,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Set config data.
+config.set = function(prop, value) {
+return grunt.util.namespace.set(config.data, config.getPropString(prop), value);
+};
+
+// Deep merge config data.
+config.merge = function(obj) {
+grunt.util._.<span class="apidocCodeKeywordSpan">merge</span>(config.data, obj);
+return config.data;
+};
+
+// Initialize config data.
+config.init = function(obj) {
+grunt.verbose.write('Initializing config...').ok();
+// Initialize and return data.
+...</pre></li>
     </ul>
 
 
@@ -28926,7 +31549,22 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// When called, sets the async flag and returns a function that can
+// be used to continue processing the queue.
+context.async = function() {
+  async = true;
+  // The returned function should execute asynchronously in case
+  // someone tries to do this.async()(); inside a task (WTF).
+  return grunt.util._.<span class="apidocCodeKeywordSpan">once</span>(function(success) {
+    setTimeout(function() { complete(success); }, 1);
+  });
+};
+
+// Expose some information about the currently-running task.
+this.current = context;
+...</pre></li>
     </ul>
 
 
@@ -29070,7 +31708,24 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Widths for options/tasks table output.
+exports.widths = [1, col1len, 2, 76 - col1len];
+};
+
+// Render an array in table form.
+exports.table = function(arr) {
+arr.forEach(function(item) {
+  grunt.log.writetableln(exports.widths, ['', grunt.util._.<span class="apidocCodeKeywordSpan">pad</span>(item[0], col1len
+), '', item[1]]);
+});
+};
+
+// Methods to run, in-order.
+exports.queue = [
+'initOptions',
+'initTasks',
+...</pre></li>
     </ul>
 
 
@@ -29314,7 +31969,23 @@
     return func.apply(value, args);
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    grunt.verbose.warn('No tasks were registered or unregistered.');
+  }
+} catch (e) {
+  // Something went wrong.
+  grunt.log.write(msg).error().verbose.error(e.stack).or.error(e);
+}
+// Restore registry.
+registry = loadTaskStack.<span class="apidocCodeKeywordSpan">pop</span>() || {};
+}
+
+// Log a message when loading tasks.
+function loadTasksMessage(info) {
+// Only keep track of names of top-level loaded tasks and collections,
+// not sub-tasks.
+if (loadTaskDepth === 0) { lastInfo = info; }
+...</pre></li>
     </ul>
 
 
@@ -29527,7 +32198,24 @@
     return func.apply(value, args);
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    _tasks = Object.keys(grunt.task._tasks).sort();
+    verbose.writeln('Available tasks: ' + _tasks.join(' '));
+
+    // Display available options (for shell completion, etc).
+    _options = [];
+    Object.keys(grunt.cli.optlist).forEach(function(long) {
+      var o = grunt.cli.optlist[long];
+      _options.<span class="apidocCodeKeywordSpan">push</span>('--' + (o.negate ? 'no-' : '') + long
+);
+      if (o.short) { _options.push('-' + o.short); }
+    });
+    verbose.writeln('Available options: ' + _options.join(' '));
+  }
+
+  return;
+}
+...</pre></li>
     </ul>
 
 
@@ -29695,7 +32383,24 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Like mkdir -p. Create a directory and any intermediary directories.
+file.mkdir = function(dirpath, mode) {
+if (grunt.option('no-write')) { return; }
+// Set directory mode in a strict-mode-friendly way.
+if (mode == null) {
+  mode = parseInt('0777', 8) &amp; (~process.umask());
+}
+dirpath.split(pathSeparatorRe).<span class="apidocCodeKeywordSpan">reduce</span>(function(parts, part) {
+  parts += part + '/';
+  var subpath = path.resolve(parts);
+  if (!file.exists(subpath)) {
+    try {
+      fs.mkdirSync(subpath, mode);
+    } catch (e) {
+      throw grunt.util.error('Unable to create directory "' + subpath + '" (Error code: ' + e.code
+ + ').', e);
+...</pre></li>
     </ul>
 
 
@@ -29836,7 +32541,22 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+};
+
+// The actual config data.
+config.data = {};
+
+// Escape any . in name with \. so dot-based namespacing works properly.
+config.escape = function(str) {
+  return str.<span class="apidocCodeKeywordSpan">replace</span>(/\./g, '\\.');
+};
+
+// Return prop as a string.
+config.getPropString = function(prop) {
+  return Array.isArray(prop) ? prop.map(config.escape).join('.') : prop;
+};
+...</pre></li>
     </ul>
 
 
@@ -30149,7 +32869,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+var grunt = require('../grunt');
+
+// Get/set config data. If value was passed, set. Otherwise, get.
+var config = module.exports = function(prop, value) {
+  if (arguments.length === 2) {
+    // Two arguments were passed, set the property's value.
+    return config.<span class="apidocCodeKeywordSpan">set</span>(prop, value);
+  } else {
+    // Get the property's value (or the entire data object).
+    return config.get(prop);
+  }
+};
+
+// The actual config data.
+...</pre></li>
     </ul>
 
 
@@ -30194,7 +32930,23 @@
     return func.apply(value, args);
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+};
+
+// Return an array of all file paths that match the given wildcard patterns.
+file.expand = function() {
+var args = grunt.util.toArray(arguments);
+// If the first argument is an options object, save those options to pass
+// into the file.glob.sync method.
+var options = grunt.util.kindOf(args[0]) === 'object' ? args.<span class="apidocCodeKeywordSpan">shift</span>() : {};
+// Use the first argument if it's an Array, otherwise convert the arguments
+// object to an array and use that.
+var patterns = Array.isArray(args[0]) ? args[0] : args;
+// Return empty set if there are no patterns or filepaths.
+if (patterns.length === 0) { return []; }
+// Return all matching filepaths.
+var matches = processPatterns(patterns, function(pattern) {
+...</pre></li>
     </ul>
 
 
@@ -30287,7 +33039,23 @@
   result = this.thru(interceptor);
   return isUnwrapped ? (isTaker ? result.value()[0] : result.value()) : result;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Filepaths to return.
+var result = [];
+// Iterate over flattened patterns array.
+grunt.util._.flattenDeep(patterns).forEach(function(pattern) {
+  // If the first character is ! it should be omitted
+  var exclusion = pattern.indexOf('!') === 0;
+  // If the pattern is an exclusion, remove the !
+  if (exclusion) { pattern = pattern.<span class="apidocCodeKeywordSpan">slice</span>(1); }
+  // Find all matching files for this pattern.
+  var matches = fn(pattern);
+  if (exclusion) {
+    // If an exclusion, remove matching files.
+    result = grunt.util._.difference(result, matches);
+  } else {
+    // Otherwise add matching files.
+...</pre></li>
     </ul>
 
 
@@ -30380,7 +33148,23 @@
     return func.apply(value, args);
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+grunt.log.muted = true;
+// Initialize task system so that available tasks can be listed.
+grunt.task.init([], {help: true});
+// Re-enable logging.
+grunt.log.muted = false;
+
+// Display available tasks (for shell completion, etc).
+_tasks = Object.keys(grunt.task._tasks).<span class="apidocCodeKeywordSpan">sort</span>();
+verbose.writeln('Available tasks: ' + _tasks.join(' '));
+
+// Display available options (for shell completion, etc).
+_options = [];
+Object.keys(grunt.cli.optlist).forEach(function(long) {
+  var o = grunt.cli.optlist[long];
+  _options.push('--' + (o.negate ? 'no-' : '') + long);
+...</pre></li>
     </ul>
 
 
@@ -30620,7 +33404,22 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  nextTask();
+};
+
+// Clear remaining tasks from the queue.
+Task.prototype.clearQueue = function(options) {
+  if (!options) { options = {}; }
+  if (options.untilMarker) {
+    this._queue.<span class="apidocCodeKeywordSpan">splice</span>(0, this._queue.indexOf(this._marker) + 1);
+  } else {
+    this._queue = [];
+  }
+  // Make chainable!
+  return this;
+};
+...</pre></li>
     </ul>
 
 
@@ -30644,7 +33443,24 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Like mkdir -p. Create a directory and any intermediary directories.
+file.mkdir = function(dirpath, mode) {
+if (grunt.option('no-write')) { return; }
+// Set directory mode in a strict-mode-friendly way.
+if (mode == null) {
+  mode = parseInt('0777', 8) &amp; (~process.umask());
+}
+dirpath.<span class="apidocCodeKeywordSpan">split</span>(pathSeparatorRe).reduce(function(parts, part) {
+  parts += part + '/';
+  var subpath = path.resolve(parts);
+  if (!file.exists(subpath)) {
+    try {
+      fs.mkdirSync(subpath, mode);
+    } catch (e) {
+      throw grunt.util.error('Unable to create directory "' + subpath + '" (Error code: ' + e.code
+ + ').', e);
+...</pre></li>
     </ul>
 
 
@@ -31301,7 +34117,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  multiple arguments and dealing with numbers as options. Be aware previously
+  `--foo bar` used to pass the value `'bar'` to the option `foo`. It will now
+  set the option `foo` to `true` and run the task `bar`.
+-`glob` is upgraded to `~6.0.4` and `minimatch` is upgraded to `~3.0.0`. Results
+  are now sorted by default with `grunt.file.expandMapping()`. Pass the
+  `nosort: true` option if you don't want the results to be sorted.
+- `lodash` was upgraded to `~4.3.0`. Many changes have occurred. Some of which
+  that directly effect Grunt are `grunt.util._.<span class="apidocCodeKeywordSpan">template</span>()` returns a compile
+  function and `grunt.util._.flatten` no longer flattens deeply.
+  `grunt.util._` is deprecated and we highly encourage you to
+  `npm install lodash` and `var _ = require('lodash')` to use `lodash`.
+  Please see the lodash changelog for a full list of changes: https://github.com/lodash/lodash/wiki/Changelog
+- `iconv-lite` is upgraded to `~0.4.13` and strips the BOM by default.
+- `js-yaml` is upgraded to `~3.5.2` and may affect `grunt.file.readYAML`.
+  We encourage you to please `npm install js-yaml` and use
+...</pre></li>
     </ul>
 
 
@@ -31442,7 +34274,23 @@
   result = this.thru(interceptor);
   return isUnwrapped ? (isTaker ? result.value()[0] : result.value()) : result;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+return (config.data = obj || {});
+};
+
+// Test to see if required config params have been defined. If not, throw an
+// exception (use this inside of a task).
+config.requires = function() {
+var p = grunt.util.pluralize;
+var props = grunt.util.<span class="apidocCodeKeywordSpan">toArray</span>(arguments).map(config.getPropString);
+var msg = 'Verifying propert' + p(props.length, 'y/ies') +
+  ' ' + grunt.log.wordlist(props) + ' exist' + p(props.length, 's') +
+  ' in config...';
+grunt.verbose.write(msg);
+var failProps = config.data &amp;&amp; props.filter(function(prop) {
+  return config.get(prop) == null;
+}).map(function(prop) {
+...</pre></li>
     </ul>
 
 
@@ -32057,7 +34905,23 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    // Find all matching files for this pattern.
+    var matches = fn(pattern);
+    if (exclusion) {
+      // If an exclusion, remove matching files.
+      result = grunt.util._.difference(result, matches);
+    } else {
+      // Otherwise add matching files.
+      result = grunt.util._.<span class="apidocCodeKeywordSpan">union</span>(result, matches);
+    }
+  });
+  return result;
+};
+
+// Match a filepath or filepaths against one or more wildcard patterns. Returns
+// all matching filepaths.
+...</pre></li>
     </ul>
 
 
@@ -32129,7 +34993,24 @@
   }
   return func.apply(object, arrayPush([this.value()], arguments));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  this.data = grunt.config([name, target]);
+  // Expose normalized files object.
+  this.files = task.normalizeMultiTaskFiles(this.data, target);
+  // Expose normalized, flattened, uniqued array of src files.
+  Object.defineProperty(this, 'filesSrc', {
+    enumerable: true,
+    get: function() {
+      return grunt.util._(this.files).chain().map('src').flatten().<span class="apidocCodeKeywordSpan">uniq</span>().value
+();
+    }.bind(this)
+  });
+  // Call original task function, passing in the target and any other args.
+  return fn.apply(this, this.args);
+});
+
+thisTask = task._tasks[name];
+...</pre></li>
     </ul>
 
 
@@ -32270,7 +35151,23 @@
     return func.apply(value, args);
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  this._running = false;
+  if (this._options.done) {
+    this._options.done();
+  }
+  return;
+}
+// Add a placeholder to the front of the queue.
+this._queue.<span class="apidocCodeKeywordSpan">unshift</span>(this._placeholder);
+
+// Expose some information about the currently-running task.
+var context = {
+  // The current task name plus args, as-passed.
+  nameArgs: thing.nameArgs,
+  // The current task name.
+  name: thing.task.name,
+...</pre></li>
     </ul>
 
 
@@ -32381,7 +35278,23 @@
     <li>description and source-code<pre class="apidocCodePre">function wrapperValue() {
   return baseWrapperValue(this.__wrapped__, this.__actions__);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  }
+
+  if ('dest' in result) {
+    result.dest = obj.dest;
+  }
+
+  return result;
+}).flatten().<span class="apidocCodeKeywordSpan">value</span>();
+
+// Log this.file src and dest properties when --verbose is specified.
+if (grunt.option('verbose')) {
+  files.forEach(function(obj) {
+    var output = [];
+    if ('src' in obj) {
+      output.push(obj.src.length &gt; 0 ? grunt.log.wordlist(obj.src) : '[no src]'.yellow);
+...</pre></li>
     </ul>
 
 
@@ -32893,7 +35806,23 @@
   // if the result is non-string stop the chain and return the value
   return typeof res === 'string' ? new s(res) : res;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Expose task.requires on `this`.
+this.requires = task.requires.bind(task);
+// Expose config.requires on `this`.
+this.requiresConfig = grunt.config.requires;
+// Return an options object with the specified defaults overwritten by task-
+// specific overrides, via the "options" property.
+this.options = function() {
+  var args = [{}].<span class="apidocCodeKeywordSpan">concat</span>(grunt.util.toArray(arguments)).concat([
+    grunt.config([name, 'options'])
+  ]);
+  var options = grunt.util._.extend.apply(null, args);
+  grunt.verbose.writeflags(options, 'Options');
+  return options;
+};
+// If this task was an alias or a multi task called without a target,
+...</pre></li>
     </ul>
 
 
@@ -33145,7 +36074,23 @@
   // if the result is non-string stop the chain and return the value
   return typeof res === 'string' ? new s(res) : res;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Initialize task system so that available tasks can be listed.
+grunt.task.init([], {help: true});
+// Re-enable logging.
+grunt.log.muted = false;
+
+// Display available tasks (for shell completion, etc).
+_tasks = Object.keys(grunt.task._tasks).sort();
+verbose.writeln('Available tasks: ' + _tasks.<span class="apidocCodeKeywordSpan">join</span>(' '));
+
+// Display available options (for shell completion, etc).
+_options = [];
+Object.keys(grunt.cli.optlist).forEach(function(long) {
+  var o = grunt.cli.optlist[long];
+  _options.push('--' + (o.negate ? 'no-' : '') + long);
+  if (o.short) { _options.push('-' + o.short); }
+...</pre></li>
     </ul>
 
 
@@ -33289,7 +36234,23 @@
   // if the result is non-string stop the chain and return the value
   return typeof res === 'string' ? new s(res) : res;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Escape any . in name with \. so dot-based namespacing works properly.
+config.escape = function(str) {
+return str.replace(/\./g, '\\.');
+};
+
+// Return prop as a string.
+config.getPropString = function(prop) {
+return Array.isArray(prop) ? prop.<span class="apidocCodeKeywordSpan">map</span>(config.escape).join('.') : prop;
+};
+
+// Get raw, unprocessed config data.
+config.getRaw = function(prop) {
+if (prop) {
+  // Prop was passed, get that specific property's value.
+  return grunt.util.namespace.get(config.data, config.getPropString(prop));
+...</pre></li>
     </ul>
 
 
@@ -33361,7 +36322,24 @@
   // if the result is non-string stop the chain and return the value
   return typeof res === 'string' ? new s(res) : res;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Widths for options/tasks table output.
+exports.widths = [1, col1len, 2, 76 - col1len];
+};
+
+// Render an array in table form.
+exports.table = function(arr) {
+arr.forEach(function(item) {
+  grunt.log.writetableln(exports.widths, ['', grunt.util._.<span class="apidocCodeKeywordSpan">pad</span>(item[0], col1len
+), '', item[1]]);
+});
+};
+
+// Methods to run, in-order.
+exports.queue = [
+'initOptions',
+'initTasks',
+...</pre></li>
     </ul>
 
 
@@ -33469,7 +36447,22 @@
   // if the result is non-string stop the chain and return the value
   return typeof res === 'string' ? new s(res) : res;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+};
+
+// The actual config data.
+config.data = {};
+
+// Escape any . in name with \. so dot-based namespacing works properly.
+config.escape = function(str) {
+  return str.<span class="apidocCodeKeywordSpan">replace</span>(/\./g, '\\.');
+};
+
+// Return prop as a string.
+config.getPropString = function(prop) {
+  return Array.isArray(prop) ? prop.map(config.escape).join('.') : prop;
+};
+...</pre></li>
     </ul>
 
 
@@ -33595,7 +36588,23 @@
   // if the result is non-string stop the chain and return the value
   return typeof res === 'string' ? new s(res) : res;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Filepaths to return.
+var result = [];
+// Iterate over flattened patterns array.
+grunt.util._.flattenDeep(patterns).forEach(function(pattern) {
+  // If the first character is ! it should be omitted
+  var exclusion = pattern.indexOf('!') === 0;
+  // If the pattern is an exclusion, remove the !
+  if (exclusion) { pattern = pattern.<span class="apidocCodeKeywordSpan">slice</span>(1); }
+  // Find all matching files for this pattern.
+  var matches = fn(pattern);
+  if (exclusion) {
+    // If an exclusion, remove matching files.
+    result = grunt.util._.difference(result, matches);
+  } else {
+    // Otherwise add matching files.
+...</pre></li>
     </ul>
 
 
@@ -33631,7 +36640,22 @@
   // if the result is non-string stop the chain and return the value
   return typeof res === 'string' ? new s(res) : res;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  nextTask();
+};
+
+// Clear remaining tasks from the queue.
+Task.prototype.clearQueue = function(options) {
+  if (!options) { options = {}; }
+  if (options.untilMarker) {
+    this._queue.<span class="apidocCodeKeywordSpan">splice</span>(0, this._queue.indexOf(this._marker) + 1);
+  } else {
+    this._queue = [];
+  }
+  // Make chainable!
+  return this;
+};
+...</pre></li>
     </ul>
 
 
@@ -33649,7 +36673,24 @@
   // if the result is non-string stop the chain and return the value
   return typeof res === 'string' ? new s(res) : res;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Like mkdir -p. Create a directory and any intermediary directories.
+file.mkdir = function(dirpath, mode) {
+if (grunt.option('no-write')) { return; }
+// Set directory mode in a strict-mode-friendly way.
+if (mode == null) {
+  mode = parseInt('0777', 8) &amp; (~process.umask());
+}
+dirpath.<span class="apidocCodeKeywordSpan">split</span>(pathSeparatorRe).reduce(function(parts, part) {
+  parts += part + '/';
+  var subpath = path.resolve(parts);
+  if (!file.exists(subpath)) {
+    try {
+      fs.mkdirSync(subpath, mode);
+    } catch (e) {
+      throw grunt.util.error('Unable to create directory "' + subpath + '" (Error code: ' + e.code
+ + ').', e);
+...</pre></li>
     </ul>
 
 
@@ -34150,7 +37191,23 @@
     <li>description and source-code<pre class="apidocCodePre">function value() {
   return this._wrapped;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  }
+
+  if ('dest' in result) {
+    result.dest = obj.dest;
+  }
+
+  return result;
+}).flatten().<span class="apidocCodeKeywordSpan">value</span>();
+
+// Log this.file src and dest properties when --verbose is specified.
+if (grunt.option('verbose')) {
+  files.forEach(function(obj) {
+    var output = [];
+    if ('src' in obj) {
+      output.push(obj.src.length &gt; 0 ? grunt.log.wordlist(obj.src) : '[no src]'.yellow);
+...</pre></li>
     </ul>
 
 
@@ -34307,7 +37364,23 @@
     // args[startIndex] = rest;
     // return func.apply(this, args);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    Object.keys(options).forEach(function(key) {
+      if (!(key in cli.options)) {
+        // If this option doesn't exist in the parsed cli.options, add it in.
+        cli.options[key] = options[key];
+      } else if (cli.optlist[key].type === Array) {
+        // If this option's type is Array, append it to any existing array
+        // (or create a new array).
+        [].push.<span class="apidocCodeKeywordSpan">apply</span>(cli.options[key], options[key]);
+      }
+    });
+  }
+
+  // Run tasks.
+  grunt.tasks(cli.tasks, cli.options, done);
+};
+...</pre></li>
     </ul>
 
 
@@ -34555,7 +37628,23 @@
     <li>description and source-code<pre class="apidocCodePre">concat = function (obj, iterator, callback) {
     return fn(async.eachOf, obj, iterator, callback);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Expose task.requires on `this`.
+this.requires = task.requires.bind(task);
+// Expose config.requires on `this`.
+this.requiresConfig = grunt.config.requires;
+// Return an options object with the specified defaults overwritten by task-
+// specific overrides, via the "options" property.
+this.options = function() {
+  var args = [{}].<span class="apidocCodeKeywordSpan">concat</span>(grunt.util.toArray(arguments)).concat([
+    grunt.config([name, 'options'])
+  ]);
+  var options = grunt.util._.extend.apply(null, args);
+  grunt.verbose.writeflags(options, 'Options');
+  return options;
+};
+// If this task was an alias or a multi task called without a target,
+...</pre></li>
     </ul>
 
 
@@ -35030,7 +38119,23 @@
         eachfn(arr, iteratee, done);
     }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+};
+
+// Initialize tasks.
+task.init = function(tasks, options) {
+if (!options) { options = {}; }
+
+// Were only init tasks specified?
+var allInit = tasks.length &gt; 0 &amp;&amp; tasks.<span class="apidocCodeKeywordSpan">every</span>(function(name) {
+  var obj = task._taskPlusArgs(name).task;
+  return obj &amp;&amp; obj.init;
+});
+
+// Get any local Gruntfile or tasks that might exist. Use --gruntfile override
+// if specified, otherwise search the current directory or any parent.
+var gruntfile, msg;
+...</pre></li>
     </ul>
 
 
@@ -35079,7 +38184,23 @@
     <li>description and source-code<pre class="apidocCodePre">filter = function (obj, iterator, callback) {
     return fn(async.eachOf, obj, iterator, callback);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+config.requires = function() {
+var p = grunt.util.pluralize;
+var props = grunt.util.toArray(arguments).map(config.getPropString);
+var msg = 'Verifying propert' + p(props.length, 'y/ies') +
+  ' ' + grunt.log.wordlist(props) + ' exist' + p(props.length, 's') +
+  ' in config...';
+grunt.verbose.write(msg);
+var failProps = config.data &amp;&amp; props.<span class="apidocCodeKeywordSpan">filter</span>(function(prop) {
+  return config.get(prop) == null;
+}).map(function(prop) {
+  return '"' + prop + '"';
+});
+if (config.data &amp;&amp; failProps.length === 0) {
+  grunt.verbose.ok();
+  return true;
+...</pre></li>
     </ul>
 
 
@@ -35162,7 +38283,22 @@
     <li>description and source-code<pre class="apidocCodePre">forEach = function (arr, iterator, callback) {
     return async.eachOf(arr, _withoutIndex(iterator), callback);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+  // Display available tasks (for shell completion, etc).
+  _tasks = Object.keys(grunt.task._tasks).sort();
+  verbose.writeln('Available tasks: ' + _tasks.join(' '));
+
+  // Display available options (for shell completion, etc).
+  _options = [];
+  Object.keys(grunt.cli.optlist).<span class="apidocCodeKeywordSpan">forEach</span>(function(long) {
+    var o = grunt.cli.optlist[long];
+    _options.push('--' + (o.negate ? 'no-' : '') + long);
+    if (o.short) { _options.push('-' + o.short); }
+  });
+  verbose.writeln('Available options: ' + _options.join(' '));
+}
+...</pre></li>
     </ul>
 
 
@@ -35390,7 +38526,23 @@
     // args[startIndex] = rest;
     // return func.apply(this, args);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  grunt.log.writeln(msg);
+}
+
+// If --stack is enabled, log the appropriate error stack (if it exists).
+function dumpStack(e) {
+  if (grunt.option('stack')) {
+    if (e.origError &amp;&amp; e.origError.stack) {
+      console.<span class="apidocCodeKeywordSpan">log</span>(e.origError.stack);
+    } else if (e.stack) {
+      console.log(e.stack);
+    }
+  }
+}
+
+// A fatal error occurred. Abort immediately.
+...</pre></li>
     </ul>
 
 
@@ -35405,7 +38557,23 @@
     <li>description and source-code<pre class="apidocCodePre">map = function (obj, iterator, callback) {
     return fn(async.eachOf, obj, iterator, callback);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Escape any . in name with \. so dot-based namespacing works properly.
+config.escape = function(str) {
+return str.replace(/\./g, '\\.');
+};
+
+// Return prop as a string.
+config.getPropString = function(prop) {
+return Array.isArray(prop) ? prop.<span class="apidocCodeKeywordSpan">map</span>(config.escape).join('.') : prop;
+};
+
+// Get raw, unprocessed config data.
+config.getRaw = function(prop) {
+if (prop) {
+  // Prop was passed, get that specific property's value.
+  return grunt.util.namespace.get(config.data, config.getPropString(prop));
+...</pre></li>
     </ul>
 
 
@@ -35487,32 +38655,29 @@
     <h2>
         <a href="#apidoc.element.grunt.util.async.nextTick" id="apidoc.element.grunt.util.async.nextTick">
         function <span class="apidocSignatureSpan">grunt.util.async.</span>nextTick
-        <span class="apidocSignatureSpan">(callback)</span>
+        <span class="apidocSignatureSpan">()</span>
         </a>
     </h2>
     <ul>
-    <li>description and source-code<pre class="apidocCodePre">function nextTick(callback) {
-  if (typeof callback !== 'function')
-    throw new TypeError('callback is not a function');
-  // on the way out, don't bother. it won't get fired anyway.
-  if (process._exiting)
+    <li>description and source-code<pre class="apidocCodePre">nextTick = function () {
     return;
-
-  var args;
-  if (arguments.length &gt; 1) {
-    args = new Array(arguments.length - 1);
-    for (var i = 1; i &lt; arguments.length; i++)
-      args[i - 1] = arguments[i];
-  }
-
-  nextTickQueue.push({
-    callback,
-    domain: process.domain || null,
-    args
-  });
-  tickInfo[kLength]++;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  // If task failed, call error handler.
+  if (!success &amp;&amp; this._options.error) {
+    this._options.error.call({name: context.name, nameArgs: context.nameArgs}, err);
+  }
+  // only call done async if explicitly requested to
+  // see: https://github.com/gruntjs/grunt/pull/1026
+  if (asyncDone) {
+    process.<span class="apidocCodeKeywordSpan">nextTick</span>(function() {
+      done(err, success);
+    });
+  } else {
+    done(err, success);
+  }
+}.bind(this);
+...</pre></li>
     </ul>
 
 
@@ -35674,7 +38839,24 @@
         callback(err, memo);
     });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Like mkdir -p. Create a directory and any intermediary directories.
+file.mkdir = function(dirpath, mode) {
+if (grunt.option('no-write')) { return; }
+// Set directory mode in a strict-mode-friendly way.
+if (mode == null) {
+  mode = parseInt('0777', 8) &amp; (~process.umask());
+}
+dirpath.split(pathSeparatorRe).<span class="apidocCodeKeywordSpan">reduce</span>(function(parts, part) {
+  parts += part + '/';
+  var subpath = path.resolve(parts);
+  if (!file.exists(subpath)) {
+    try {
+      fs.mkdirSync(subpath, mode);
+    } catch (e) {
+      throw grunt.util.error('Unable to create directory "' + subpath + '" (Error code: ' + e.code
+ + ').', e);
+...</pre></li>
     </ul>
 
 
@@ -36260,7 +39442,23 @@
     <li>description and source-code<pre class="apidocCodePre">filter = function (context, args) {
   return new HookerFilter(context, args);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+config.requires = function() {
+var p = grunt.util.pluralize;
+var props = grunt.util.toArray(arguments).map(config.getPropString);
+var msg = 'Verifying propert' + p(props.length, 'y/ies') +
+  ' ' + grunt.log.wordlist(props) + ' exist' + p(props.length, 's') +
+  ' in config...';
+grunt.verbose.write(msg);
+var failProps = config.data &amp;&amp; props.<span class="apidocCodeKeywordSpan">filter</span>(function(prop) {
+  return config.get(prop) == null;
+}).map(function(prop) {
+  return '"' + prop + '"';
+});
+if (config.data &amp;&amp; failProps.length === 0) {
+  grunt.verbose.ok();
+  return true;
+...</pre></li>
     </ul>
 
 
@@ -36445,7 +39643,24 @@
 
   return typeof obj === 'object' &amp;&amp; obj &amp;&amp; prop in obj;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Set directory mode in a strict-mode-friendly way.
+if (mode == null) {
+  mode = parseInt('0777', 8) &amp; (~process.umask());
+}
+dirpath.split(pathSeparatorRe).reduce(function(parts, part) {
+  parts += part + '/';
+  var subpath = path.resolve(parts);
+  if (!file.<span class="apidocCodeKeywordSpan">exists</span>(subpath)) {
+    try {
+      fs.mkdirSync(subpath, mode);
+    } catch (e) {
+      throw grunt.util.error('Unable to create directory "' + subpath + '" (Error code: ' + e.code
+ + ').', e);
+    }
+  }
+  return parts;
+...</pre></li>
     </ul>
 
 
@@ -36473,7 +39688,23 @@
 
   return obj;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Get/set config data. If value was passed, set. Otherwise, get.
+var config = module.exports = function(prop, value) {
+  if (arguments.length === 2) {
+    // Two arguments were passed, set the property's value.
+    return config.set(prop, value);
+  } else {
+    // Get the property's value (or the entire data object).
+    return config.<span class="apidocCodeKeywordSpan">get</span>(prop);
+  }
+};
+
+// The actual config data.
+config.data = {};
+
+// Escape any . in name with \. so dot-based namespacing works properly.
+...</pre></li>
     </ul>
 
 
@@ -36494,7 +39725,23 @@
     return (obj[prop] = value);
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+var grunt = require('../grunt');
+
+// Get/set config data. If value was passed, set. Otherwise, get.
+var config = module.exports = function(prop, value) {
+  if (arguments.length === 2) {
+    // Two arguments were passed, set the property's value.
+    return config.<span class="apidocCodeKeywordSpan">set</span>(prop, value);
+  } else {
+    // Get the property's value (or the entire data object).
+    return config.get(prop);
+  }
+};
+
+// The actual config data.
+...</pre></li>
     </ul>
 
 
@@ -36544,7 +39791,22 @@
     <li>description and source-code<pre class="apidocCodePre">create = function () {
   return new Task();
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+var grunt = require('../grunt');
+
+// Nodejs libs.
+var path = require('path');
+
+// Extend generic "task" util lib.
+var parent = grunt.util.task.<span class="apidocCodeKeywordSpan">create</span>();
+
+// The module to be exported.
+var task = module.exports = Object.create(parent);
+
+// A temporary registry of tasks and metadata.
+var registry = {tasks: [], untasks: [], meta: {}};
+...</pre></li>
     </ul>
 
 
@@ -36572,7 +39834,23 @@
     [].splice.apply(this._queue, [index, 0].concat(things));
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  // Throw an exception if any tasks weren't found.
+  var fails = things.filter(function(thing) { return !thing.task; });
+  if (fails.length &gt; 0) {
+    this._throwIfRunning(new Error('Task "' + fails[0].nameArgs + '" not found.'));
+    return this;
+  }
+  // Append things to queue in the correct spot.
+  this.<span class="apidocCodeKeywordSpan">_push</span>(things);
+  // Make chainable!
+  return this;
+};
+
+// Add a marker to the queue to facilitate clearing it programmatically.
+Task.prototype.mark = function() {
+  this._push(this._marker);
+...</pre></li>
     </ul>
 
 
@@ -36604,7 +39882,23 @@
   // The task to run and the args to run it with.
   return {task: task, nameArgs: name, args: args, flags: flags};
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Initialize tasks.
+task.init = function(tasks, options) {
+if (!options) { options = {}; }
+
+// Were only init tasks specified?
+var allInit = tasks.length &gt; 0 &amp;&amp; tasks.every(function(name) {
+  var obj = task.<span class="apidocCodeKeywordSpan">_taskPlusArgs</span>(name).task;
+  return obj &amp;&amp; obj.init;
+});
+
+// Get any local Gruntfile or tasks that might exist. Use --gruntfile override
+// if specified, otherwise search the current directory or any parent.
+var gruntfile, msg;
+if (allInit || options.gruntfile === false) {
+...</pre></li>
     </ul>
 
 
@@ -36625,7 +39919,24 @@
     this._options.error.call({name: null}, obj);
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Enqueue a task.
+Task.prototype.run = function() {
+  // Parse arguments into an array, returning an array of task+args objects.
+  var things = this.parseArgs(arguments).map(this._taskPlusArgs, this);
+  // Throw an exception if any tasks weren't found.
+  var fails = things.filter(function(thing) { return !thing.task; });
+  if (fails.length &gt; 0) {
+    this.<span class="apidocCodeKeywordSpan">_throwIfRunning</span>(new Error('Task "' + fails[0].nameArgs + '
+;" not found.'));
+    return this;
+  }
+  // Append things to queue in the correct spot.
+  this._push(things);
+  // Make chainable!
+  return this;
+};
+...</pre></li>
     </ul>
 
 
@@ -36662,7 +39973,24 @@
     <li>description and source-code<pre class="apidocCodePre">exists = function (name) {
   return name in this._tasks;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Set directory mode in a strict-mode-friendly way.
+if (mode == null) {
+  mode = parseInt('0777', 8) &amp; (~process.umask());
+}
+dirpath.split(pathSeparatorRe).reduce(function(parts, part) {
+  parts += part + '/';
+  var subpath = path.resolve(parts);
+  if (!file.<span class="apidocCodeKeywordSpan">exists</span>(subpath)) {
+    try {
+      fs.mkdirSync(subpath, mode);
+    } catch (e) {
+      throw grunt.util.error('Unable to create directory "' + subpath + '" (Error code: ' + e.code
+ + ').', e);
+    }
+  }
+  return parts;
+...</pre></li>
     </ul>
 
 
@@ -36711,7 +40039,24 @@
     this._options[name] = options[name];
   }.bind(this));
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+v0.4.2:
+  date: 2013-11-21
+  changes:
+    - Extract internal "namespace" lib to external "getobject" lib.
+    - '"Grunt collections" are now deprecated, use peerDependencies. See "grunt-contrib" 0.8.0 for details
+.'
+    - Fix stdout / stderr issues on Windows. Closes gh-940, gh-921, gh-744, gh-792, gh-644, gh-708.
+    - Fix pipe-redirecting on Windows. Closes gh-510.
+    - Fixed this.<span class="apidocCodeKeywordSpan">options</span>() in renamed basic tasks. Closes gh-855.
+    - Update underscore.string dependency to follow semver. Closes gh-886.
+    - Output task options in verbose mode. Closes gh-749.
+    - Add file.preserveBOM property. Closes gh-806, gh-937.
+    - Test that file methods warn. Closes gh-909.
+    - Fixed a few spelling errors in code comments. Closes gh-849.
+    - Updated watch, jshint and nodeunit deps. Closes gh-914.
+v0.4.1:
+...</pre></li>
     </ul>
 
 
@@ -36728,7 +40073,23 @@
   // of all arguments.
   return Array.isArray(args[0]) ? args[0] : [].slice.call(args);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+}
+
+// A little header stuff.
+verbose.header('Initializing').writeflags(option.flags(), 'Command-line options');
+
+// Determine and output which tasks will be run.
+var tasksSpecified = tasks &amp;&amp; tasks.length &gt; 0;
+tasks = task.<span class="apidocCodeKeywordSpan">parseArgs</span>([tasksSpecified ? tasks : 'default']);
+
+// Initialize tasks.
+task.init(tasks, options);
+
+verbose.writeln();
+if (!tasksSpecified) {
+  verbose.writeln('No tasks specified, running default tasks.');
+...</pre></li>
     </ul>
 
 
@@ -36767,7 +40128,23 @@
   // Make chainable!
   return this;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// If optional "info" string is omitted, shuffle arguments a bit.
+if (fn == null) {
+  fn = info;
+  info = 'Custom multi task.';
+}
+// Store a reference to the task object, in case the task gets renamed.
+var thisTask;
+task.<span class="apidocCodeKeywordSpan">registerTask</span>(name, info, function(target) {
+  // Guaranteed to always be the actual task name.
+  var name = thisTask.name;
+  // Arguments (sans target) as an array.
+  this.args = grunt.util.toArray(arguments).slice(1);
+  // If a target wasn't specified, run this task once for each target.
+  if (!target || target === '*') {
+    return task.runAllTargets(name, this.args);
+...</pre></li>
     </ul>
 
 
@@ -36839,7 +40216,20 @@
   // Make chainable!
   return this;
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+        util.exit(0);
+      }
+    }
+  });
+
+  // Execute all tasks, in order. Passing each task individually in a forEach
+  // allows the error callback to execute multiple times.
+  tasks.forEach(function(name) { task.<span class="apidocCodeKeywordSpan">run</span>(name); });
+  // Run tasks async internally to reduce call-stack, per:
+  // https://github.com/gruntjs/grunt/pull/1026
+  task.start({asyncDone: true});
+};
+...</pre></li>
     </ul>
 
 
@@ -36915,7 +40305,23 @@
     complete(err);
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    // The current task arguments.
+    args: thing.args,
+    // The current arguments, available as named flags.
+    flags: thing.flags
+  };
+
+  // Actually run the task function (handling this.async, etc)
+  this.<span class="apidocCodeKeywordSpan">runTaskFn</span>(context, function() {
+    return thing.task.fn.apply(this, this.args);
+  }, nextTask, !!opts.asyncDone);
+
+}.bind(this);
+
+// Update flag.
+this._running = true;
+...</pre></li>
     </ul>
 
 
@@ -36937,7 +40343,23 @@
     return s.replace(/\uFFFE/g, ':').replace(/\uFFFF/g, '\\');
   });
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Given a task name, determine which actual task will be called, and what
+// arguments will be passed into the task callback. "foo" -&gt; task "foo", no
+// args. "foo:bar:baz" -&gt; task "foo:bar:baz" with no args (if "foo:bar:baz"
+// task exists), otherwise task "foo:bar" with arg "baz" (if "foo:bar" task
+// exists), otherwise task "foo" with args "bar" and "baz".
+Task.prototype._taskPlusArgs = function(name) {
+  // Get task name / argument parts.
+  var parts = this.<span class="apidocCodeKeywordSpan">splitArgs</span>(name);
+  // Start from the end, not the beginning!
+  var i = parts.length;
+  var task;
+  do {
+    // Get a task.
+    task = this._tasks[parts.slice(0, i).join(':')];
+    // If the task doesn't exist, decrement `i`, and if `i` is greater than
+...</pre></li>
     </ul>
 
 
@@ -36998,7 +40420,17 @@
   // Process the next task.
   nextTask();
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  });
+
+  // Execute all tasks, in order. Passing each task individually in a forEach
+  // allows the error callback to execute multiple times.
+  tasks.forEach(function(name) { task.run(name); });
+  // Run tasks async internally to reduce call-stack, per:
+  // https://github.com/gruntjs/grunt/pull/1026
+  task.<span class="apidocCodeKeywordSpan">start</span>({asyncDone: true});
+};
+...</pre></li>
     </ul>
 
 
@@ -37085,7 +40517,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    // If this task was an alias or a multi task called without a target,
+    // only log if in verbose mode.
+    var logger = _fn.alias || (thisTask.multi &amp;&amp; (!arg || arg === '*')) ? 'verbose' : 'log'
+;;
+    // Actually log.
+    grunt[logger].header('Running "' + this.nameArgs + '"' +
+      (this.name !== this.nameArgs ? ' (' + this.name + ')' : '') + ' task');
+    // If --debug was specified, log the path to this task's source file.
+    grunt[logger].<span class="apidocCodeKeywordSpan">debug</span>('Task source: ' + thisTask.meta.filepath);
+    // Actually run the task.
+    return _fn.apply(this, arguments);
+  };
+  return task;
+};
+
+// Multi task targets can't start with _ or be a reserved property (options).
+...</pre></li>
     </ul>
 
 
@@ -37101,7 +40550,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  return '"' + prop + '"';
+});
+if (config.data &amp;&amp; failProps.length === 0) {
+  grunt.verbose.ok();
+  return true;
+} else {
+  grunt.verbose.or.write(msg);
+  grunt.log.<span class="apidocCodeKeywordSpan">error</span>().error('Unable to process task.');
+  if (!config.data) {
+    throw grunt.util.error('Unable to load config.');
+  } else {
+    throw grunt.util.error('Required config propert' +
+      p(failProps.length, 'y/ies') + ' ' + failProps.join(', ') + ' missing.');
+  }
+}
+...</pre></li>
     </ul>
 
 
@@ -37117,7 +40582,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    last = tmpl;
+  }
+} catch (e) {
+  // In upgrading to Lo-Dash (or Underscore.js 1.3.3), \n and \r in template
+  // tags now causes an exception to be thrown. Warn the user why this is
+  // happening. https://github.com/documentcloud/underscore/issues/553
+  if (String(e) === 'SyntaxError: Unexpected token ILLEGAL' &amp;&amp; /\n|\r/.test(tmpl)) {
+    grunt.log.<span class="apidocCodeKeywordSpan">errorlns</span>('A special character was detected in this template. '
+; +
+      'Inside template tags, the \\n and \\r special characters must be ' +
+      'escaped as \\\\n and \\\\r. (grunt 0.4.0+)');
+  }
+  // Slightly better error message.
+  e.message = 'An error occurred while processing a template (' + e.message + ').';
+  grunt.warn(e, grunt.fail.code.TEMPLATE_ERROR);
+}
+...</pre></li>
     </ul>
 
 
@@ -37133,7 +40615,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+fail.warn = function(e, errcode) {
+var message = typeof e === 'string' ? e : e.message;
+fail.warncount++;
+writeln(message, 'warn');
+// If -f or --force aren't used, stop script processing.
+if (!grunt.option('force')) {
+  dumpStack(e);
+  grunt.log.writeln().<span class="apidocCodeKeywordSpan">fail</span>('Aborted due to warnings.');
+  grunt.util.exit(typeof errcode === 'number' ? errcode : fail.code.WARNING);
+}
+};
+
+// This gets called at the very end.
+fail.report = function() {
+if (fail.warncount &gt; 0) {
+...</pre></li>
     </ul>
 
 
@@ -37149,7 +40647,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Display help and quit if the user did --help.
+if (option('help')) {
+  help.display();
+  return;
+}
+
+// A little header stuff.
+verbose.<span class="apidocCodeKeywordSpan">header</span>('Initializing').writeflags(option.flags(), 'Command-line
+ options');
+
+// Determine and output which tasks will be run.
+var tasksSpecified = tasks &amp;&amp; tasks.length &gt; 0;
+tasks = task.parseArgs([tasksSpecified ? tasks : 'default']);
+
+// Initialize tasks.
+task.init(tasks, options);
+...</pre></li>
     </ul>
 
 
@@ -37165,7 +40680,22 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    verbose.writeln('Available options: ' + _options.join(' '));
+  }
+
+  return;
+}
+
+// Init colors.
+log.<span class="apidocCodeKeywordSpan">initColors</span>();
+
+// Display help and quit if the user did --help.
+if (option('help')) {
+  help.display();
+  return;
+}
+...</pre></li>
     </ul>
 
 
@@ -37181,7 +40711,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+config.merge = function(obj) {
+  grunt.util._.merge(config.data, obj);
+  return config.data;
+};
+
+// Initialize config data.
+config.init = function(obj) {
+  grunt.verbose.write('Initializing config...').<span class="apidocCodeKeywordSpan">ok</span>();
+  // Initialize and return data.
+  return (config.data = obj || {});
+};
+
+// Test to see if required config params have been defined. If not, throw an
+// exception (use this inside of a task).
+config.requires = function() {
+...</pre></li>
     </ul>
 
 
@@ -37213,7 +40759,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+WARNING: 6,
+};
+
+// DRY it up!
+function writeln(e, mode) {
+grunt.log.muted = false;
+var msg = String(e.message || e);
+if (!grunt.<span class="apidocCodeKeywordSpan">option</span>('no-color')) { msg += '\x07'; } // Beep!
+if (mode === 'warn') {
+  msg = 'Warning: ' + msg + ' ';
+  msg += (grunt.option('force') ? 'Used --force, continuing.'.underline : 'Use --force to continue.'
+;);
+  msg = msg.yellow;
+} else {
+  msg = ('Fatal error: ' + msg).red;
+}
+...</pre></li>
     </ul>
 
 
@@ -37229,7 +40792,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+}
+
+// Log a message when loading tasks.
+function loadTasksMessage(info) {
+// Only keep track of names of top-level loaded tasks and collections,
+// not sub-tasks.
+if (loadTaskDepth === 0) { lastInfo = info; }
+grunt.verbose.<span class="apidocCodeKeywordSpan">subhead</span>('Registering ' + info + ' tasks.');
+}
+
+// Load tasks and handlers from a given directory.
+function loadTasks(tasksdir) {
+try {
+  var files = grunt.file.glob.sync('*.{js,coffee}', {cwd: tasksdir, maxDepth: 1});
+  // Load tasks from files.
+...</pre></li>
     </ul>
 
 
@@ -37245,7 +40824,18 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+};
+
+// This gets called at the very end.
+fail.report = function() {
+  if (fail.warncount &gt; 0) {
+    grunt.log.writeln().fail('Done, but with warnings.');
+  } else {
+    grunt.log.writeln().<span class="apidocCodeKeywordSpan">success</span>('Done.');
+  }
+};
+...</pre></li>
     </ul>
 
 
@@ -37261,7 +40851,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  exports.initCol1(col1);
+  return [col1, o.info];
+});
+};
+
+exports.options = function() {
+grunt.log.header('Options');
+exports.<span class="apidocCodeKeywordSpan">table</span>(exports._options);
+};
+
+exports.optionsFooter = function() {
+grunt.log.writeln().writelns(
+  'Options marked with * have methods exposed via the grunt API and should ' +
+  'instead be specified inside the Gruntfile wherever possible.'
+);
+...</pre></li>
     </ul>
 
 
@@ -37293,7 +40899,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  fail.fatal(e, fail.code.TASK_FAILURE);
+};
+process.on('uncaughtException', uncaughtHandler);
+
+// Report, etc when all tasks have completed.
+task.options({
+  error: function(e) {
+    fail.<span class="apidocCodeKeywordSpan">warn</span>(e, fail.code.TASK_FAILURE);
+  },
+  done: function() {
+    // Stop handling uncaught exceptions so that we don't leave any
+    // unwanted process-level side effects behind. There is no need to do
+    // this in the error callback, because fail.warn() will either kill
+    // the process, or with --force keep on going all the way here.
+    process.removeListener('uncaughtException', uncaughtHandler);
+...</pre></li>
     </ul>
 
 
@@ -37309,7 +40931,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+// Test to see if required config params have been defined. If not, throw an
+// exception (use this inside of a task).
+config.requires = function() {
+var p = grunt.util.pluralize;
+var props = grunt.util.toArray(arguments).map(config.getPropString);
+var msg = 'Verifying propert' + p(props.length, 'y/ies') +
+  ' ' + grunt.log.<span class="apidocCodeKeywordSpan">wordlist</span>(props) + ' exist' + p(props.length, &amp;#
+x27;s') +
+  ' in config...';
+grunt.verbose.write(msg);
+var failProps = config.data &amp;&amp; props.filter(function(prop) {
+  return config.get(prop) == null;
+}).map(function(prop) {
+  return '"' + prop + '"';
+});
+...</pre></li>
     </ul>
 
 
@@ -37341,7 +40980,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+    `npm install lodash` and `var _ = require('lodash')` to use `lodash`.
+    Please see the lodash changelog for a full list of changes: https://github.com/lodash/lodash/wiki/Changelog
+  - `iconv-lite` is upgraded to `~0.4.13` and strips the BOM by default.
+  - `js-yaml` is upgraded to `~3.5.2` and may affect `grunt.file.readYAML`.
+    We encourage you to please `npm install js-yaml` and use
+    `var YAML = require('js-yaml')` directly in case of future deprecations.
+  - A file `mode` option can be passed into
+    [grunt.file.<span class="apidocCodeKeywordSpan">write</span>()](http://gruntjs.com/api/grunt.file#grunt.file.write).
+  - `Done, without errors.` was changed to `Done.` to avoid failing by mistake
+    on the word `errors`.
+v0.4.5:
+date: 2014-05-12
+changes:
+  - Updated rimraf to 2.2.8. Closes gh-1134.
+  - Moved grunt.log into separate grunt-legacy-log module.
+...</pre></li>
     </ul>
 
 
@@ -37357,7 +41012,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Display help and quit if the user did --help.
+if (option('help')) {
+  help.display();
+  return;
+}
+
+// A little header stuff.
+verbose.header('Initializing').<span class="apidocCodeKeywordSpan">writeflags</span>(option.flags(), 'Command-line
+ options');
+
+// Determine and output which tasks will be run.
+var tasksSpecified = tasks &amp;&amp; tasks.length &gt; 0;
+tasks = task.parseArgs([tasksSpecified ? tasks : 'default']);
+
+// Initialize tasks.
+task.init(tasks, options);
+...</pre></li>
     </ul>
 
 
@@ -37373,7 +41045,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  // Update options with passed-in options.
+  option.init(options);
+
+  // Display the grunt version and quit if the user did --version.
+  var _tasks, _options;
+  if (option('version')) {
+// Not --verbose.
+log.<span class="apidocCodeKeywordSpan">writeln</span>('grunt v' + grunt.version);
+
+if (option('verbose')) {
+  // --verbose
+  verbose.writeln('Install path: ' + path.resolve(__dirname, '..'));
+  // Yes, this is a total hack, but we don't want to log all that verbose
+  // task initialization stuff here.
+  grunt.log.muted = true;
+...</pre></li>
     </ul>
 
 
@@ -37389,7 +41077,23 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+exports.options = function() {
+  grunt.log.header('Options');
+  exports.table(exports._options);
+};
+
+exports.optionsFooter = function() {
+  grunt.log.writeln().<span class="apidocCodeKeywordSpan">writelns</span>(
+    'Options marked with * have methods exposed via the grunt API and should ' +
+    'instead be specified inside the Gruntfile wherever possible.'
+  );
+};
+
+// Tasks.
+exports.initTasks = function() {
+...</pre></li>
     </ul>
 
 
@@ -37405,7 +41109,24 @@
   var fn = (this &amp;&amp; this !== root &amp;&amp; this instanceof wrapper) ? Ctor : func;
   return fn.apply(thisArg, arguments);
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+// Widths for options/tasks table output.
+exports.widths = [1, col1len, 2, 76 - col1len];
+};
+
+// Render an array in table form.
+exports.table = function(arr) {
+arr.forEach(function(item) {
+  grunt.log.<span class="apidocCodeKeywordSpan">writetableln</span>(exports.widths, ['', grunt.util._.pad(item[0], col1len
+), '', item[1]]);
+});
+};
+
+// Methods to run, in-order.
+exports.queue = [
+'initOptions',
+'initTasks',
+...</pre></li>
     </ul>
 
 
