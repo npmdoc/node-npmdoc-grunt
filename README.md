@@ -1,6 +1,6 @@
 # npmdoc-grunt
 
-#### api documentation for  [grunt (v1.0.1)](http://gruntjs.com/)  [![npm package](https://img.shields.io/npm/v/npmdoc-grunt.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-grunt) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-grunt.svg)](https://travis-ci.org/npmdoc/node-npmdoc-grunt)
+#### basic api documentation for  [grunt (v1.0.1)](http://gruntjs.com/)  [![npm package](https://img.shields.io/npm/v/npmdoc-grunt.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-grunt) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-grunt.svg)](https://travis-ci.org/npmdoc/node-npmdoc-grunt)
 
 #### The JavaScript Task Runner
 
